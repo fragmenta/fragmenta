@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log" 
+	"log"
 	"os"
 	"os/exec"
+	"path"
 	"sort"
-    "path"
 )
 
 const VERSION = "1.0"
@@ -48,8 +48,6 @@ func templatesPath() string {
 	return os.ExpandEnv("$GOPATH/src/github.com/fragmenta/fragmenta/templates")
 }
 
-
-
 // Parse the command line arguments and respond
 func main() {
 
@@ -57,13 +55,13 @@ func main() {
 
 	args := os.Args
 	command := ""
-    
-    if len(args) > 1 {
-        command = args[1]
-    }
-    
-    // We should intelligently read project path depending on the command?
-    // Or just assume we act on the current directory?
+
+	if len(args) > 1 {
+		command = args[1]
+	}
+
+	// We should intelligently read project path depending on the command?
+	// Or just assume we act on the current directory?
 	projectPath := "."
 
 	// Will we ever act on another path?
@@ -104,7 +102,7 @@ func main() {
 
 	case "migrate", "m":
 		if requireValidProject(projectPath) {
-            runMigrate(args)
+			runMigrate(args)
 		}
 
 	case "backup", "b":
@@ -126,7 +124,7 @@ func main() {
 		if requireValidProject(projectPath) {
 			runServer(projectPath)
 		} else {
-    		showHelp(args)
+			showHelp(args)
 		}
 	}
 
@@ -146,12 +144,13 @@ func showHelp(args []string) {
 	helpString += fmt.Sprintf("Fragmenta version: %s", VERSION)
 	helpString += "\n  fragmenta version -> display version"
 	helpString += "\n  fragmenta help -> display help"
+	helpString += "\n  fragmenta new [path/to/app] -> creates a new app at the path supplied"
 	helpString += "\n  fragmenta server -> runs server locally"
 	helpString += "\n  fragmenta migrate -> runs new sql migrations in db/migrate"
-	helpString += "\n  fragmenta new [path/to/app] -> creates a new app at the path supplied"
 	helpString += "\n  fragmenta generate resource [name] [fieldname]:[fieldtype]* -> creates resource CRUD actions and views"
 	helpString += "\n  fragmenta generate migration [name] -> creates a new named sql migration in db/migrate"
 	helpString += "\n  fragmenta test  -> run tests"
+	helpString += "\n  fragmenta -> also runs server locally"
 	helpString += DIVIDER
 	log.Print(helpString)
 }
@@ -161,8 +160,6 @@ func runServer(projectPath string) {
 	showVersion()
 
 	killServer()
-    
-    
 
 	err := buildServer(localServerPath(projectPath), nil)
 
@@ -170,16 +167,15 @@ func runServer(projectPath string) {
 		log.Printf("Error building server: %s", err)
 		return
 	}
-    
-	log.Println("Building server...")
-    buildAssets(projectPath)
 
-    
-    // We should at this point check if migrations need to be run
-    // if they do, we should run them first
-    // this is a bti slow so not doing it automatically... but that can lead to errors
-//	log.Println("Running migrations...")
-   // runMigrate([]string{})
+	log.Println("Building server...")
+	buildAssets(projectPath)
+
+	// We should at this point check if migrations need to be run
+	// if they do, we should run them first
+	// this is a bti slow so not doing it automatically... but that can lead to errors
+	//	log.Println("Running migrations...")
+	// runMigrate([]string{})
 
 	log.Println("Launching server")
 
@@ -264,11 +260,11 @@ func readConfig(projectPath string) {
 
 	ConfigDevelopment = data["development"]
 	ConfigProduction = data["production"]
-    ConfigTest = data["test"]
+	ConfigTest = data["test"]
 }
 
 func cloneExamples(projectPath string) string {
-	tmpDir := path.Join(os.TempDir(),".fragmenta-examples")
+	tmpDir := path.Join(os.TempDir(), ".fragmenta-examples")
 	repo := "https://github.com/fragmenta/examples.git"
 
 	// If templates already exists at tmpDir we remove it to avoid potential git conflicts
