@@ -1,0 +1,10 @@
+<div class="row [[ .fragmenta_resources ]]_form">
+<form method="post" >
+<div class="twothird">
+    [[ .fragmenta_form_fields ]]
+    <div class="actions">
+        <input type="submit" class="button" value="Submit">
+    </div>
+</div>
+</form>
+</div>
