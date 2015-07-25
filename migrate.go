@@ -1,29 +1,28 @@
 package main
 
 import (
-	"github.com/fragmenta/query"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
+
+	"github.com/fragmenta/query"
 )
-
-
 
 func runMigrate(args []string) {
 
 	// Remove fragmenta backup from args list
 	args = args[2:]
-    
-    switch fragmentaConfig(args) {
-        case "production":
-            migrateDB(ConfigProduction)
-        case "test":
-            migrateDB(ConfigTest)
-        default:
-            migrateDB(ConfigDevelopment)
-    }
-    
+
+	switch fragmentaConfig(args) {
+	case "production":
+		migrateDB(ConfigProduction)
+	case "test":
+		migrateDB(ConfigTest)
+	default:
+		migrateDB(ConfigDevelopment)
+	}
+
 }
 
 // Find the last run migration, and run all those after it in order
@@ -31,7 +30,7 @@ func runMigrate(args []string) {
 func migrateDB(config map[string]string) {
 
 	db := config["db"]
-	migration_count := 0
+	migrationCount := 0
 
 	openDatabase(config)
 
@@ -49,7 +48,7 @@ func migrateDB(config map[string]string) {
 		filename := path.Base(file)
 
 		if migrate {
-			log.Printf("\n%s\nRunning migration %s", DIVIDER, filename)
+			log.Printf("\n%s\nRunning migration %s", fragmentaDivider, filename)
 			// Execute this sql file against the database
 			// Create our psql command
 			result, err := runCommand("psql", "-d", db, "-f", file)
@@ -62,9 +61,9 @@ func migrateDB(config map[string]string) {
 
 			// Now store this as a completed migration
 			migration = filename
-			migration_count += 1
+			migrationCount++
 
-			log.Printf("Completed migration %s\n%s\n%s", migration, string(result), DIVIDER)
+			log.Printf("Completed migration %s\n%s\n%s", migration, string(result), fragmentaDivider)
 		} else if filename == migration {
 			// NB this check assumes the penultimate migration file exists
 			migrate = true
@@ -72,7 +71,7 @@ func migrateDB(config map[string]string) {
 
 	}
 
-	if migration_count > 0 {
+	if migrationCount > 0 {
 		writeMetadata(config, migration)
 		log.Printf("Migrations complete up to migration %s on db %s\n\n", migration, db)
 	} else {
@@ -98,7 +97,7 @@ func openDatabase(config map[string]string) {
 		os.Exit(9)
 	}
 
-	log.Printf("%s\n", DIVIDER)
+	log.Printf("%s\n", fragmentaDivider)
 	log.Printf("Opened database at %s for user %s", config["db"], config["db_user"])
 
 }
@@ -129,11 +128,11 @@ func readMetadata(config map[string]string) string {
 }
 
 // Update the database with a line recording what we have done
-func writeMetadata(config map[string]string, migration_version string) {
+func writeMetadata(config map[string]string, migrationVersion string) {
 
 	sql := "Insert into fragmenta_metadata(updated_at,fragmenta_version,migration_version,status) VALUES(NOW(),$1,$2,100);"
 
-	result, err := query.ExecSQL(sql, VERSION, migration_version)
+	result, err := query.ExecSQL(sql, fragmentaVersion, migrationVersion)
 	if err != nil {
 		log.Printf("Database ERROR %s %s", err, result)
 	}

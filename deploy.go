@@ -19,17 +19,17 @@ func runDeploy(args []string) {
 		log.Printf("Could not find deploy script at %s", deploy)
 		return
 	}
-    
-    // Default to development
-    mode := "development"
+
+	// Default to development
+	mode := "development"
 	if len(args) == 3 {
-	    mode = args[2]
-    }
+		mode = args[2]
+	}
 
 	log.Printf("Running deploy from " + deploy)
-	result, err := runCommand(deploy,mode)
+	result, err := runCommand(deploy, mode)
 	if err != nil {
-		log.Printf("Error running deploy", err)
+		log.Printf("Error running deploy %s", err)
 		return
 	}
 

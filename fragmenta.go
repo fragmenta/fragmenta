@@ -13,13 +13,19 @@ import (
 	"sort"
 )
 
-const VERSION = "1.0"
-const DIVIDER = "\n------\n"
-const APP_NAME = "fragmenta-server" // this should be settable in config
-const GO = "/usr/local/go/bin/go"
+const fragmentaVersion = "1.0"
+const fragmentaDivider = "\n------\n"
 
+//const APP_NAME = "fragmenta-server" // this should be settable in config
+//const GO = "/usr/local/go/bin/go"
+
+// The development config from fragmenta.json
 var ConfigDevelopment map[string]string
+
+// The development config from fragmenta.json
 var ConfigProduction map[string]string
+
+// The app test config from fragmenta.json
 var ConfigTest map[string]string
 
 // NB NEVER use fragmenta, for obvious reasons - we use the process name to kill
@@ -132,16 +138,16 @@ func main() {
 
 // Show the version of this tool
 func showVersion() {
-	helpString := DIVIDER
-	helpString += fmt.Sprintf("Fragmenta version: %s", VERSION)
-	helpString += DIVIDER
+	helpString := fragmentaDivider
+	helpString += fmt.Sprintf("Fragmenta version: %s", fragmentaVersion)
+	helpString += fragmentaDivider
 	log.Print(helpString)
 }
 
 // Show the help for this tool.
 func showHelp(args []string) {
-	helpString := DIVIDER
-	helpString += fmt.Sprintf("Fragmenta version: %s", VERSION)
+	helpString := fragmentaDivider
+	helpString += fmt.Sprintf("Fragmenta version: %s", fragmentaVersion)
 	helpString += "\n  fragmenta version -> display version"
 	helpString += "\n  fragmenta help -> display help"
 	helpString += "\n  fragmenta new [path/to/app] -> creates a new app at the path supplied"
@@ -151,7 +157,7 @@ func showHelp(args []string) {
 	helpString += "\n  fragmenta generate migration [name] -> creates a new named sql migration in db/migrate"
 	helpString += "\n  fragmenta test  -> run tests"
 	helpString += "\n  fragmenta -> also runs server locally"
-	helpString += DIVIDER
+	helpString += fragmentaDivider
 	log.Print(helpString)
 }
 
@@ -171,16 +177,8 @@ func runServer(projectPath string) {
 	log.Println("Building server...")
 	buildAssets(projectPath)
 
-	// We should at this point check if migrations need to be run
-	// if they do, we should run them first
-	// this is a bti slow so not doing it automatically... but that can lead to errors
-	//	log.Println("Running migrations...")
-	// runMigrate([]string{})
-
-	log.Println("Launching server")
-
+	log.Println("Launching server...")
 	cmd := exec.Command(localServerPath(projectPath))
-
 	stdout, err := cmd.StdoutPipe()
 	stderr, err := cmd.StderrPipe()
 	err = cmd.Start()
@@ -204,10 +202,11 @@ func buildAssets(path string) {
 func requireValidProject(projectPath string) bool {
 	if isValidProject(projectPath) {
 		return true
-	} else {
-		log.Printf("\nNo fragmenta project found at this path\n")
-		return false
 	}
+
+	log.Printf("\nNo fragmenta project found at this path\n")
+	return false
+
 }
 
 func isValidProject(projectPath string) bool {
@@ -233,10 +232,9 @@ func runCommand(command string, args ...string) ([]byte, error) {
 	output, err := cmd.Output()
 	if err != nil {
 		return output, err
-	} else {
-		return output, nil
 	}
 
+	return output, nil
 }
 
 // Read our config file and set up the server accordingly
@@ -286,7 +284,7 @@ func cloneExamples(projectPath string) string {
 }
 
 func sortedKeys(m map[string]string) []string {
-	keys := make([]string, 0)
+	var keys []string
 	for k := range m {
 		keys = append(keys, k)
 	}
