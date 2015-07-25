@@ -4,25 +4,8 @@ import (
 	"log"
 	"os"
 	"os/exec"
-    "time"
+	"time"
 )
-
-// To build fragmenta itself for use on server, use:
-// GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o ./bin/fragmenta github.com/fragmenta/fragmenta
-// we could have a command for that too?
-
-// Build websites for running
-// Must include asset compilation
-// fragmenta build linux
-// Needs go compiled for cross-compilation with
-// cd /usr/local/go/src; GOOS=linux GOARCH=amd64 CGO_ENABLED=1 sudo ./make.bash
-//CC_FOR_TARGET?
-
-
-
-// In debug mode, we should recompile on every request by calling fragmenta and quitting?
-// only when files have changed hmm... FIXME
-
 
 func runBuild(args []string) {
 	// Remove fragmenta build from args list
@@ -43,52 +26,44 @@ func buildServer(server string, env []string) error {
 	if err == nil {
 		err = os.Remove(server)
 		if err != nil {
-			log.Printf("Error removing server", err)
+			log.Printf("Error removing server %s", err)
 		}
 	}
 
+	// If we have a goimports, run that, if not run go fmt
+	_, err = os.Stat(os.ExpandEnv("$GOPATH/bin/goimports"))
 
+	if err == nil {
+		// Go imports behaviour differs from go fmt
+		srcPath := "./src"
+		log.Printf("Running goimports at %s", srcPath)
+		result, err := runCommand("goimports", "-w", srcPath)
+		if err != nil {
+			log.Printf("Error running goimports %s", err)
+			return err
+		}
+		if len(result) > 0 {
+			log.Printf(string(result))
+		}
 
-
-    // If we have a goimports, run that, if not run go fmt
-    _, err = os.Stat(os.ExpandEnv("$GOPATH/bin/goimports"))
-    
-
-    if err == nil {
-        // Go imports behaviour differs from go fmt
-        srcPath := "./src"
-    	log.Printf("Running goimports at %s", srcPath)
-    	result, err := runCommand("goimports", "-w", srcPath)
-    	if err != nil {
-    		log.Printf("Error running goimports", err)
-    		return err
-    	}
-    	if len(result) > 0 {
-    	    log.Printf(string(result))
-    	}
-    
-    } else {
-        srcPath := "./src/..."
-    	// Run go fmt on any packages with src
-    	log.Printf("Running go fmt at %s", srcPath)
-    	result, err := runCommand("go", "fmt", srcPath)
-    	if err != nil {
-    		log.Printf("Error running fmt", err)
-    		return err
-    	}
-    	if len(result) > 0 {
-    	    log.Printf(string(result))
-    	}
-    }
-   
-
-    
-    
+	} else {
+		srcPath := "./src/..."
+		// Run go fmt on any packages with src
+		log.Printf("Running go fmt at %s", srcPath)
+		result, err := runCommand("go", "fmt", srcPath)
+		if err != nil {
+			log.Printf("Error running fmt %s", err)
+			return err
+		}
+		if len(result) > 0 {
+			log.Printf(string(result))
+		}
+	}
 
 	// Build new binary
 	log.Printf("Building server at %s", server)
-    started := time.Now()
-    
+	started := time.Now()
+
 	log.Printf("CMD %s %s %s %s %s", "go", "build", "-o", server, appPath("."))
 
 	// NB we set environment here because we may be cross=compiling
@@ -107,8 +82,8 @@ func buildServer(server string, env []string) error {
 
 	// We should also be rebuilding assets here
 	if len(output) == 0 {
-        
-		log.Printf("Build completed successfully in %s",time.Since(started).String())
+
+		log.Printf("Build completed successfully in %s", time.Since(started).String())
 	} else {
 		log.Printf(string(output))
 	}

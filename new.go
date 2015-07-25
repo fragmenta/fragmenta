@@ -18,11 +18,10 @@ Possible examples:
 cms - full cms
 blog - simple blog - hmm, do we need this? yes would be nice
 app - simple app with no pages, tags, only users + auth
-api - simple app with no users or anything, so that they can build an api on it. 
+api - simple app with no users or anything, so that they can build an api on it.
 
 
-Start with CMS, and work downwards by stripping out parts. NB CMS is only one which requires creating secrets file isn't it? We can put that functionality into the server pkg though, so no need for app to worry about it. 
-
+Start with CMS, and work downwards by stripping out parts.
 
 // Second arg - path - this must be a path within GOPATH - either a full path (in which case remove gopath)
 // or a path within GOPATH/src/
@@ -32,7 +31,6 @@ Start with CMS, and work downwards by stripping out parts. NB CMS is only one wh
 // fragmenta new github.com/kennygrant/app-template github.com/kennygrant/myapp
 
 */
-
 
 // Usage: fragmenta new [cms] [path]
 //

@@ -10,41 +10,39 @@ import (
 )
 
 func fragmentaConfig(args []string) string {
-    if len(args) > 0 {
-        return args[0]
-    } else {
-        return "development"
-    }  
-}
+	if len(args) > 0 {
+		return args[0]
+	}
 
+	return "development" // default to dev config
+}
 
 func runBackup(args []string) {
 	// Remove fragmenta backup from args list
 	args = args[2:]
-    
-    switch fragmentaConfig(args) {
-        case "production":
-            backupDB(ConfigProduction)
-        case "test":
-            backupDB(ConfigTest)
-        default:
-            backupDB(ConfigDevelopment)
-    }
+
+	switch fragmentaConfig(args) {
+	case "production":
+		backupDB(ConfigProduction)
+	case "test":
+		backupDB(ConfigTest)
+	default:
+		backupDB(ConfigDevelopment)
+	}
 }
 
 func runRestore(args []string) {
 	// Remove fragmenta backup from args list
 	args = args[2:]
 
-    switch fragmentaConfig(args) {
-        case "production":
-            restoreDB(ConfigProduction)
-        case "test":
-            restoreDB(ConfigTest)
-        default:
-            restoreDB(ConfigDevelopment)
-    }
-
+	switch fragmentaConfig(args) {
+	case "production":
+		restoreDB(ConfigProduction)
+	case "test":
+		restoreDB(ConfigTest)
+	default:
+		restoreDB(ConfigDevelopment)
+	}
 
 }
 
@@ -53,10 +51,10 @@ func restoreDB(config map[string]string) {
 	// Just assume it is psql for now
 	db := config["db"]
 
-    if len(db) == 0 {
-        log.Printf("Error running restore - no config")
-        return
-    }
+	if len(db) == 0 {
+		log.Printf("Error running restore - no config")
+		return
+	}
 
 	files, err := filepath.Glob("./db/backup/*.sql.gz")
 	if err != nil {
@@ -102,11 +100,11 @@ func backupDB(config map[string]string) {
 	adapter := "pg_dump"
 	db := config["db"]
 
-    if len(db) == 0 {
-        log.Printf("Error running backup - no config")
-        return
-    }
-    
+	if len(db) == 0 {
+		log.Println("Error running backup - no config")
+		return
+	}
+
 	log.Printf("Running backup for %s", db)
 
 	date := time.Now().Format("2006-01-02-15-04")
@@ -123,7 +121,7 @@ func backupDB(config map[string]string) {
 	// use compress/gzip instead?
 	result, err = runCommand("gzip", dst)
 	if err != nil {
-		log.Printf("Error running gz", err)
+		log.Printf("Error running gz %s", err)
 		return
 	}
 	log.Printf(string(result))

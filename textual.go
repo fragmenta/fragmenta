@@ -11,7 +11,7 @@ func Truncate(s string, length int) string {
 	return TruncateWithEllipsis(s, length, "…")
 }
 
-// Truncate the given string to length using provided ellipsis.
+// TruncateWithEllipsis truncates the given string to length using provided ellipsis.
 func TruncateWithEllipsis(s string, length int, ellipsis string) string {
 
 	l := len(s)
@@ -22,7 +22,7 @@ func TruncateWithEllipsis(s string, length int, ellipsis string) string {
 	return s
 }
 
-// Provide the plural version of an English word using some simple rules and a table of exceptions.
+// ToPlural provides the plural version of an English word using some simple rules and a table of exceptions.
 func ToPlural(text string) (plural string) {
 
 	// We only deal with lowercase
@@ -82,7 +82,7 @@ var translations = map[string]string{
 	// ..etc
 }
 
-// Convert string from struct field names to corresponding database column names (e.g. FieldName to field_name)
+// ToSnake converts a string from struct field names to corresponding database column names (e.g. FieldName to field_name)
 func ToSnake(text string) string {
 	b := bytes.NewBufferString("")
 	for i, c := range text {
@@ -94,7 +94,7 @@ func ToSnake(text string) string {
 	return strings.ToLower(b.String())
 }
 
-// Convert string from database column names to corresponding struct field names (e.g. field_name to FieldName)
+// ToCamel converts a string from database column names to corresponding struct field names (e.g. field_name to FieldName)
 func ToCamel(text string, private ...bool) string {
 	lowerCamel := false
 	if private != nil {

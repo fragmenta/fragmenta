@@ -9,14 +9,15 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 	"text/template"
 	"time"
-    "sort"
 )
 
-var ResourceName string
-var Columns map[string]string
+// FIXME - perhaps remove these package variables and do this in a neater way
+var resourceName string
+var columns map[string]string
 
 // Run the generate command
 // Expects:
@@ -35,24 +36,24 @@ func runGenerate(args []string) {
 	switch command {
 	case "migration":
 		name := args[0]
-        sql  := fmt.Sprintf("/* SQL migration %s */", name)
+		sql := fmt.Sprintf("/* SQL migration %s */", name)
 		generateMigration(name, sql)
 	case "resource":
 		generateResource(args)
 	case "join":
-        if len(args) < 2 {
-           fmt.Println("Error - not enough arguments for join table")
-           return
-        }
-        sort.Strings(args)
-		name := fmt.Sprintf("%s-%s", args[0],args[1])
+		if len(args) < 2 {
+			fmt.Println("Error - not enough arguments for join table")
+			return
+		}
+		sort.Strings(args)
+		name := fmt.Sprintf("%s-%s", args[0], args[1])
 		sql := generateJoinSql(args)
-        generateMigration(name, sql)
-    case "server":
-        // This should generate a server file server.go in the root of the app
-        // To let them make this app go gettable without any need for fragmenta cmd!
-        // That would be really nice and quite simple to do - simply have cut down vsn of fragmenta 
-        // which builds and runs an app locally
+		generateMigration(name, sql)
+	case "server":
+		// This should generate a server file server.go in the root of the app
+		// To let them make this app go gettable without any need for fragmenta cmd!
+		// That would be really nice and quite simple to do - simply have cut down vsn of fragmenta
+		// which builds and runs an app locally
 	default:
 	}
 }
@@ -62,32 +63,30 @@ func generateResource(args []string) {
 
 	// Extract the keys from args
 	// args should be using snake case, which we will convert to camel case as necc.
-	ResourceName = ""
-    
-    // Why is this a global to the file? FIXME
-	Columns = make(map[string]string, 0)
-    joins := make([]string, 0)
-    
-    
+	resourceName = ""
+
+	// Why is this a global to the file? FIXME
+	columns = make(map[string]string, 0)
+	var joins []string
+
 	for _, v := range args {
 
-		if len(ResourceName) == 0 {
-			ResourceName = strings.ToLower(v)
+		if len(resourceName) == 0 {
+			resourceName = strings.ToLower(v)
 		} else {
 			parts := strings.Split(v, ":")
 			if len(parts) == 2 {
 				key := strings.ToLower(parts[0])
 				value := strings.ToLower(parts[1])
-                
-                if key == "joins" {
-                  // We have a list of joins, potentially separated by ,
-                  joins = strings.Split(value, ",")
-                } else {
-                   // Add a normal column 
-                   Columns[key] = value 
-                }
-                
-				
+
+				if key == "joins" {
+					// We have a list of joins, potentially separated by ,
+					joins = strings.Split(value, ",")
+				} else {
+					// Add a normal column
+					columns[key] = value
+				}
+
 			} else {
 				fmt.Printf("Invalid fields at: %s", v)
 			}
@@ -96,47 +95,44 @@ func generateResource(args []string) {
 	}
 
 	// NB we expect to start with a lower case singular
-	fmt.Printf("Generating resource with\n - name:%s\n - attributes:%v\n", ResourceName, Columns)
+	fmt.Printf("Generating resource with\n - name:%s\n - attributes:%v\n", resourceName, columns)
 
-    joinSql := ""
-    if len(joins) > 0 {
-        for _,j := range joins {
-             joinSql += generateJoinSql([]string{ResourceName,j})
-        }
-        
-    }
+	joinSql := ""
+	if len(joins) > 0 {
+		for _, j := range joins {
+			joinSql += generateJoinSql([]string{resourceName, j})
+		}
+
+	}
+
+	// We also need to generate the resource routes to have
+	// add and remove methods - perhaps something like:
+
+	// pages/1/add/comment/43
+	// pages/1/remove/comment/43
+
+	/*
+
+	   FIXME - also generate methods to retrieve comments attached to page as a list
+	   -- better to make this a query, so we can do:
+	   page.Comments().Where("published=?",3).Fetch()
+
+	   // Then where we just need ids, we could do Select("id from pages")
 
 
-    // We also need to generate the resource routes to have 
-    // add and remove methods - perhaps something like:
-    
-    // pages/1/add/comment/43
-    // pages/1/remove/comment/43
-    
-    /* 
-    
-    FIXME - also generate methods to retrieve comments attached to page as a list
-    -- better to make this a query, so we can do:    
-    page.Comments().Where("published=?",3).Fetch()
+	   func Comments() q *query.Query {
+	       q = Query.New("comments")
+	       q.Join("pages")
+	       q.Where("page_id=?"m.Id)
+	       return q
+	   }
 
-    // Then where we just need ids, we could do Select("id from pages")
+	   func (m *Page)OwnedByPage(q *query.Query) *query.Query {
+	       return q.Where("page_id=?",m.Id)
+	   }
 
-    
-    func Comments() q *query.Query {
-        q = Query.New("comments")
-        q.Join("pages")
-        q.Where("page_id=?"m.Id)
-        return q
-    }
-    
-    func (m *Page)OwnedByPage(q *query.Query) *query.Query {
-        return q.Where("page_id=?",m.Id)
-    }
-    
-    
-    */
-    
-    
+
+	*/
 
 	// First db migration
 	generateResourceMigration(joinSql)
@@ -144,15 +140,15 @@ func generateResource(args []string) {
 	// Then generate routes
 	generateResourceRoutes()
 
-	// Then finally copy files from templates dir over to src/ResourceName
+	// Then finally copy files from templates dir over to src/resourceName
 	generateResourceFiles()
-   
+
 }
 
 // Generate the routes required and insert them into the src/app/routes.go file
 func generateResourceRoutes() {
 
-    // THESE SHOULD ALL BE IN FILES // FIXME
+	// THESE SHOULD ALL BE IN FILES // FIXME
 
 	routesTemplate := `
     r.Add("/[[.fragmenta_resources]]", [[.fragmenta_resource]]_actions.HandleIndex)
@@ -175,8 +171,8 @@ func generateResourceRoutes() {
 
 	routes := string(data)
 
-	if strings.Contains(routes, ResourceName + "_actions.HandleIndex") {
-		fmt.Println("Routes already exist for resource: ", ResourceName)
+	if strings.Contains(routes, resourceName+"_actions.HandleIndex") {
+		fmt.Println("Routes already exist for resource: ", resourceName)
 		return
 	}
 
@@ -196,16 +192,16 @@ func generateResourceRoutes() {
 
 // Generate SQL for a join table migration
 func generateJoinSql(args []string) string {
-  
-    if len(args) < 2 {
-        return ""
-    }
-  
-    // Sort the table names
-    sort.Strings(args)
-    a := args[0]
-    b := args[1]
-    
+
+	if len(args) < 2 {
+		return ""
+	}
+
+	// Sort the table names
+	sort.Strings(args)
+	a := args[0]
+	b := args[1]
+
 	sql := `
 DROP TABLE [[.join_table]];
 CREATE TABLE [[.join_table]] (
@@ -214,21 +210,20 @@ CREATE TABLE [[.join_table]] (
 );
 `
 
-context := map[string]string{
-	"join_table":   ToPlural(a) + "_" + ToPlural(b), // e.g. places_tags
-	"a":   a, // places
-	"b":   b, // tags
-}
+	context := map[string]string{
+		"join_table": ToPlural(a) + "_" + ToPlural(b), // e.g. places_tags
+		"a":          a,                               // places
+		"b":          b,                               // tags
+	}
 
-return renderTemplate(sql, context)
-    
-}
+	return renderTemplate(sql, context)
 
+}
 
 // Generate a migration to create this resource table
 func generateResourceMigration(joinsSQL string) {
 
-	// We add the following fields to all ResourceNames
+	// We add the following fields to all resourceNames
 	sql := `DROP TABLE [[.fragmenta_resources]];
 CREATE TABLE [[.fragmenta_resources]] (
 id SERIAL NOT NULL,
@@ -237,24 +232,23 @@ updated_at timestamp with time zone,
 status int,
 `
 
-	for k, v := range Columns {
+	for k, v := range columns {
 		sql = sql + fmt.Sprintf("%s %s,\n", k, toSQLType(v))
 	}
 
 	sql = sql + ");\n"
 	sql = strings.Replace(sql, ",\n)", "\n)", -1)
-    
-    sql += "ALTER table [[.fragmenta_resources]] owner to [[.fragmenta_db_user]];\n"
+
+	sql += "ALTER table [[.fragmenta_resources]] owner to [[.fragmenta_db_user]];\n"
 
 	sql = reifyString(sql)
-    
-    sql += joinsSQL 
 
-	name := fmt.Sprintf("Create-%s", ToCamel(ResourceName))
+	sql += joinsSQL
+
+	name := fmt.Sprintf("Create-%s", ToCamel(resourceName))
 	generateMigration(name, sql)
 
 }
-
 
 func generateResourceFiles() {
 
@@ -266,13 +260,13 @@ func generateResourceFiles() {
 	if err != nil {
 		log.Printf("No local template files at %s", srcPath)
 
-	    // Use our internal templates path instead (inside the fragmenta package)
-        srcPath = path.Join(templatesPath(), "fragmenta_resources")
-        log.Printf("Using templates at %s", srcPath)
+		// Use our internal templates path instead (inside the fragmenta package)
+		srcPath = path.Join(templatesPath(), "fragmenta_resources")
+		log.Printf("Using templates at %s", srcPath)
 	}
 
 	//  srcPathPattern := strings.Trim(srcPath,".") + "/"
-	dstPath := path.Join(".", "src", ToPlural(ResourceName))
+	dstPath := path.Join(".", "src", ToPlural(resourceName))
 
 	fmt.Printf("Creating files at %s\n", dstPath)
 	copyAndReifyFiles(srcPath, dstPath)
@@ -281,29 +275,29 @@ func generateResourceFiles() {
 
 func copyAndReifyFiles(srcPath string, dstPath string) error {
 	var err error
-    
+
 	//log.Printf(" %s =>\n", srcPath)
 
 	// Get info on the src
 	srcInfo, err := os.Stat(srcPath)
-    if err != nil {
-        log.Fatal("Error statting src path ", srcPath)
-        return err
-    }
-    
-    // If this is a directory, copy every file within the src folder over to dst folder
+	if err != nil {
+		log.Fatal("Error statting src path ", srcPath)
+		return err
+	}
+
+	// If this is a directory, copy every file within the src folder over to dst folder
 	if srcInfo.IsDir() {
 
 		err = filepath.Walk(srcPath, func(fileSrc string, info os.FileInfo, err error) error {
-            fileDst := dstPath
-            
-            // split the srcPath on 'fragmenta_resources'
-            // and use everything after that as the dst path
-            srcParts := strings.Split(fileSrc,"/fragmenta_resources/")
-            if len(srcParts) == 2 {
-                fileDst = path.Join(dstPath, srcParts[1])
-            } 
-            
+			fileDst := dstPath
+
+			// split the srcPath on 'fragmenta_resources'
+			// and use everything after that as the dst path
+			srcParts := strings.Split(fileSrc, "/fragmenta_resources/")
+			if len(srcParts) == 2 {
+				fileDst = path.Join(dstPath, srcParts[1])
+			}
+
 			fileDst = reifyName(fileDst)
 
 			// Do not operate on dot files
@@ -314,16 +308,12 @@ func copyAndReifyFiles(srcPath string, dstPath string) error {
 			// If this entry is a dir, just make sure it exists
 			if info.IsDir() {
 				os.MkdirAll(dstPath, 0774)
-
 				return nil
-			} else {
-                // If this entry is a file, recurse and reify the file
-				//log.Printf("Copying file from %s to %s\n",fileSrc,fileDst)
-
-				// Now recurse to copy this file
-				return copyAndReifyFiles(fileSrc, fileDst)
-
 			}
+
+			// If this entry is a file, recurse and reify the file
+			return copyAndReifyFiles(fileSrc, fileDst)
+
 		})
 
 		return nil
@@ -332,15 +322,15 @@ func copyAndReifyFiles(srcPath string, dstPath string) error {
 	// If the file already exists, we should probably prompt the user as to whether they want to overwrite?
 	// We shouldn't overwrite by default as here...
 
-    // Print file destinations without prefix of time on log, to make them stand out
+	// Print file destinations without prefix of time on log, to make them stand out
 	log.Printf("=> %s\n", dstPath)
 
 	// Read the file
 	template, err := ioutil.ReadFile(srcPath)
 	if err != nil {
 		log.Fatal("Error reading file ", srcPath)
-	} 
-    
+	}
+
 	// Substitutions
 	output := reifyString(string(template))
 
@@ -383,12 +373,12 @@ func renderTemplate(tmpl string, context map[string]string) string {
 func newFields() string {
 	tmpl := "\t[[.fragmenta_resource]].[[.field_name]] = validate.[[.validate_type]](cols[\"[[.col_name]]\"])\n"
 	fields := ""
-	for _, k := range sortedKeys(Columns) {
+	for _, k := range sortedKeys(columns) {
 		fieldContext := map[string]string{
-			"fragmenta_resource":  ResourceName,
-			"col_name":          k,
-            "field_name":        ToCamel(k),
-			"validate_type":       toValidateType(Columns[k]),
+			"fragmenta_resource": resourceName,
+			"col_name":           k,
+			"field_name":         ToCamel(k),
+			"validate_type":      toValidateType(columns[k]),
 		}
 
 		fields += renderTemplate(tmpl, fieldContext)
@@ -401,14 +391,14 @@ func newFields() string {
 func structFields() string {
 	tmpl := "\t[[.field_name]]\t\t[[.field_type]]\n"
 	fields := ""
-	for _, k := range sortedKeys(Columns) {
+	for _, k := range sortedKeys(columns) {
 		fieldContext := map[string]string{
-			"fragmenta_resources": ToPlural(ResourceName),
-			"fragmenta_resource":  ResourceName,
-			"Fragmenta_Resources": ToCamel(ToPlural(ResourceName)),
-			"Fragmenta_Resource":  ToCamel(ResourceName),
+			"fragmenta_resources": ToPlural(resourceName),
+			"fragmenta_resource":  resourceName,
+			"Fragmenta_Resources": ToCamel(ToPlural(resourceName)),
+			"Fragmenta_Resource":  ToCamel(resourceName),
 			"field_name":          ToCamel(k),
-			"field_type":          toGoType(Columns[k]),
+			"field_type":          toGoType(columns[k]),
 		}
 
 		fields += renderTemplate(tmpl, fieldContext)
@@ -422,12 +412,12 @@ func showFields() string {
 	tmpl := "\t<p>[[.field_name]]: {{ .[[.fragmenta_resource]].[[.field_name]] }}</p>\n"
 	fields := ""
 
-	for _, k := range sortedKeys(Columns) {
+	for _, k := range sortedKeys(columns) {
 		fieldContext := map[string]string{
-			"fragmenta_resources": ToPlural(ResourceName),
-			"fragmenta_resource":  ResourceName,
-			"Fragmenta_Resources": ToCamel(ToPlural(ResourceName)),
-			"Fragmenta_Resource":  ToCamel(ResourceName),
+			"fragmenta_resources": ToPlural(resourceName),
+			"fragmenta_resource":  resourceName,
+			"Fragmenta_Resources": ToCamel(ToPlural(resourceName)),
+			"Fragmenta_Resource":  ToCamel(resourceName),
 			"field_name":          ToCamel(k),
 		}
 		fields += renderTemplate(tmpl, fieldContext)
@@ -436,72 +426,71 @@ func showFields() string {
 }
 
 // Generate a columns list
-func showColumns() string {
+func showcolumns() string {
 	tmpl := "\"[[.col_name]]\","
 	cols := ""
 
-	for _, k := range sortedKeys(Columns) {
-		
-        context := map[string]string{
-			"col_name":          k,
+	for _, k := range sortedKeys(columns) {
+
+		context := map[string]string{
+			"col_name": k,
 		}
 		cols += renderTemplate(tmpl, context)
 	}
-    
-    cols = strings.TrimRight(cols,",")
-    
+
+	cols = strings.TrimRight(cols, ",")
+
 	return cols
 }
 
 // Generate form fields for our columns
 func formFields() string {
-    // Start with status which we include by default but want to be editable
-    fields := fmt.Sprintf(`{{ select "Status" "status" .%s.Status .%s.StatusOptions }}
-`, ResourceName,ResourceName)
+	// Start with status which we include by default but want to be editable
+	fields := fmt.Sprintf(`{{ select "Status" "status" .%s.Status .%s.StatusOptions }}
+`, resourceName, resourceName)
 
 	tmpl := `    {{ [[.method]] "[[.field_name]]" "[[.column_name]]" .[[.fragmenta_resource]].[[.field_name]] }}
 `
-	for _, k := range sortedKeys(Columns) {
+	for _, k := range sortedKeys(columns) {
 
 		fieldContext := map[string]string{
-			"fragmenta_resources": ToPlural(ResourceName),
-			"fragmenta_resource":  ResourceName,
-			"Fragmenta_Resources": ToCamel(ToPlural(ResourceName)),
-			"Fragmenta_Resource":  ToCamel(ResourceName),
+			"fragmenta_resources": ToPlural(resourceName),
+			"fragmenta_resource":  resourceName,
+			"Fragmenta_Resources": ToCamel(ToPlural(resourceName)),
+			"Fragmenta_Resource":  ToCamel(resourceName),
 			"method":              "field",
-            "column_name":         k,
+			"column_name":         k,
 			"field_name":          ToCamel(k),
 			"resource_name":       ToCamel(k),
-			"field_type":          toInputType(Columns[k]),
+			"field_type":          toInputType(columns[k]),
 		}
 
-       
-    	fields += renderTemplate(tmpl, fieldContext)
-	
+		fields += renderTemplate(tmpl, fieldContext)
+
 	}
 	return fields
 }
 
 // Make this file name concrete by substituting values
 func reifyName(name string) string {
-	name = strings.Replace(name, "fragmenta_resource", ResourceName, -1)
-	name = strings.Replace(name, "fragmenta_resources", ToPlural(ResourceName), -1)
+	name = strings.Replace(name, "fragmenta_resource", resourceName, -1)
+	name = strings.Replace(name, "fragmenta_resources", ToPlural(resourceName), -1)
 	return name
 }
 
 // Make this template string concrete by filling in values
 func reifyString(tmpl string) string {
 	context := map[string]string{
-		"fragmenta_resources":   ToPlural(ResourceName),
-		"fragmenta_resource":    ResourceName,
-		"Fragmenta_Resources":   ToCamel(ToPlural(ResourceName)),
-		"Fragmenta_Resource":    ToCamel(ResourceName),
+		"fragmenta_resources":   ToPlural(resourceName),
+		"fragmenta_resource":    resourceName,
+		"Fragmenta_Resources":   ToCamel(ToPlural(resourceName)),
+		"Fragmenta_Resource":    ToCamel(resourceName),
 		"fragmenta_fields":      structFields(),
 		"fragmenta_form_fields": formFields(),
 		"fragmenta_show_fields": showFields(),
-        "fragmenta_new_fields": newFields(),
-        "fragmenta_columns": showColumns(),
-        "fragmenta_db_user": "booking_server",// FIXME - load app config
+		"fragmenta_new_fields":  newFields(),
+		"fragmenta_columns":     showcolumns(),
+		"fragmenta_db_user":     "booking_server", // FIXME - load app config
 	}
 
 	return renderTemplate(tmpl, context)
@@ -525,7 +514,6 @@ func toValidateType(fieldType string) string {
 
 	return fieldType
 }
-
 
 // Convert a user-defined type to a go type
 func toGoType(fieldType string) string {
@@ -564,7 +552,6 @@ func toSQLType(fieldType string) string {
 		return fieldType
 	}
 
-	return fieldType
 }
 
 // Convert a user-defined type to an input type
@@ -579,31 +566,26 @@ func toInputType(fieldType string) string {
 	default:
 		return fieldType
 	}
-
-	return fieldType
 }
 
 // ------------------------- MIGRATIONS  --------------
 
-
-
 // Generate a migration file in db/migrate
 func generateMigration(name string, content string) {
-    path := migrationPath(".", name)
-    
-    // At present we don't check for duplicates - 
-    // as our migrations include drop table, there is an argument for allowing more recent
-    // ones to supercede those which came before - if not we'd have to match on name alone not migration path...
-    /*
-    if _, err := os.Stat(path); err == nil { 
-        fmt.Println("Migration already exists: ", name)
-        return
-    }
-    */
-    
+	path := migrationPath(".", name)
+
+	// At present we don't check for duplicates -
+	// as our migrations include drop table, there is an argument for allowing more recent
+	// ones to supercede those which came before - if not we'd have to match on name alone not migration path...
+	/*
+	   if _, err := os.Stat(path); err == nil {
+	       fmt.Println("Migration already exists: ", name)
+	       return
+	   }
+	*/
+
 	fmt.Println("Generating migration: ", name)
 
-	
 	err := ioutil.WriteFile(path, []byte(content), 0744)
 	if err != nil {
 		fmt.Println("Error writing migration file: ", path)
