@@ -43,12 +43,12 @@
 
 <div class="field">
 <label>Password</label>
-<input type=text name=user_password>
+<input type=password name=user_pass>
 </div>
 
 
 <h4>Database</h4>
-<p>These fields are optional, and will be completed with sensible values if left blank.</p>
+<p>Optionally, choose a database and prefix for database name and username. A password will be automatically generated and the database created if it doesn't exist.</p>
 <div class="field">
     <select name="db_adapter">
     <option value="postgres">Postgresql</option>
@@ -56,20 +56,12 @@
     </select>
 </div>
 
+
 <div class="field">
-<label>Database Name</label>
+<label>Database Prefix</label>
 <input type=text name=db>
 </div>
 
-<div class="field">
-<label>Database User</label>
-<input type=text name=db_user>
-</div>
-
-<div class="field">
-<label>Database Password</label>
-<input type=password name=db_pass >
-</div>
 
 
 <div class="actions">

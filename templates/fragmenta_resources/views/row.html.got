@@ -1,5 +1,5 @@
 {{ if not .[[ .fragmenta_resource ]].Id }}
-    <tr>
+    <tr class="data-table-head">
         <td>Id</td>
         <td>Updated</td>
         <td>Status</td>

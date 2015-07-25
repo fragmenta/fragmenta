@@ -7,7 +7,7 @@ import (
 	"github.com/fragmenta/router"
 	"github.com/fragmenta/view"
 
-	".."
+	"bitbucket.org/kennygrant/frithandco/src/[[ .fragmenta_resources ]]"
 )
 
 // POST /[[ .fragmenta_resources ]]/1/destroy

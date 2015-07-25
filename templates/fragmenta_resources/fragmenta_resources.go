@@ -49,9 +49,9 @@ func (m *[[ .Fragmenta_Resource ]]) Destroy() error {
 	return Query().Where("id=?", m.Id).Delete()
 }
 
-// Which parameters does this model allow?
+// Which parameters does this model allow to be edited in forms?
 func AcceptedParams() []string {
-	return []string{"id","updated_at","created_at","status",[[ .fragmenta_columns ]]}
+	return []string{"id","status",[[ .fragmenta_columns ]]}
 }
 
 // Check these parameters conform to AcceptedParams, and pass validation

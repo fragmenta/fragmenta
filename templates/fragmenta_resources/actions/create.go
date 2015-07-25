@@ -7,7 +7,7 @@ import (
 	"github.com/fragmenta/router"
 	"github.com/fragmenta/view"
 
-	".."
+    "bitbucket.org/kennygrant/frithandco/src/[[ .fragmenta_resources ]]"
 )
 
 // GET [[ .fragmenta_resources ]]/create
@@ -46,18 +46,18 @@ func HandleCreate(context *router.Context) {
 
 	id, err := [[ .fragmenta_resources ]].Create(params.Map())
 	if err != nil {
-		context.Log.Error("Error creating [[ .fragmenta_resource ]],%s", err)
+		context.Log("#error creating [[ .fragmenta_resource ]],%s", err)
     	view.New(context).RenderError(context.Writer, err)
     	return
 	}
     
     // Log creation
-    context.Log.Info("Created [[ .fragmenta_resource ]] id,%d", id)
+    context.Log("#info Created [[ .fragmenta_resource ]] id,%d", id)
 	
 	// Redirect to the new [[ .fragmenta_resource ]]
 	m, err := [[ .fragmenta_resources ]].Find(id)
 	if err != nil {
-		context.Log.Error("Error creating [[ .fragmenta_resource ]],%s", err)
+		context.Log("#error creating [[ .fragmenta_resource ]],%s", err)
 	}
 
 	router.Redirect(context, url.Index(m))

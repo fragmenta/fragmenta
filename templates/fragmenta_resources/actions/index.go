@@ -9,7 +9,7 @@ import (
 	"github.com/fragmenta/view"
 	"github.com/fragmenta/view/helpers"
 
-	".."
+	"bitbucket.org/kennygrant/frithandco/src/[[ .fragmenta_resources ]]"
 )
 
 // Serve a get request at /[[ .fragmenta_resources ]]
@@ -65,7 +65,7 @@ func HandleIndex(context *router.Context) {
     var results []*[[ .fragmenta_resources ]].[[ .Fragmenta_Resource ]]
 	err := q.Fetch(&results)
 	if err != nil {
-		context.Log.Error("Error indexing [[ .fragmenta_resources ]] %s", err)
+		context.Log("#error indexing [[ .fragmenta_resources ]] %s", err)
 		view.RenderError(context.Writer, err)
 		return
 	}

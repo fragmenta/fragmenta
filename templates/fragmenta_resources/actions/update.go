@@ -8,7 +8,7 @@ import (
 	"github.com/fragmenta/view"
 	"github.com/fragmenta/view/helpers"
 
-	".."
+	"bitbucket.org/kennygrant/frithandco/src/[[ .fragmenta_resources ]]"
 )
 
 // Serve a get request at /[[ .fragmenta_resources ]]/1/update (show form to update)
@@ -18,7 +18,7 @@ func HandleUpdateShow(context *router.Context) {
 
 	[[ .fragmenta_resource ]], err := [[ .fragmenta_resources ]].Find(context.ParamInt("id"))
 	if err != nil {
-		context.Log.Error("Error finding [[ .fragmenta_resource ]] %s", err)
+		context.Log("#error finding [[ .fragmenta_resource ]] %s", err)
 		view.RenderStatus(context.Writer, http.StatusNotFound)
 		return
 	}
@@ -43,7 +43,7 @@ func HandleUpdate(context *router.Context) {
 	// Find the [[ .fragmenta_resource ]]
 	[[ .fragmenta_resource ]], err := [[ .fragmenta_resources ]].Find(context.ParamInt("id"))
 	if err != nil {
-		context.Log.Error("Error finding [[ .fragmenta_resource ]] %s", err)
+		context.Log("#error finding [[ .fragmenta_resource ]] %s", err)
 		view.RenderStatus(context.Writer, http.StatusNotFound)
 		return
 	}

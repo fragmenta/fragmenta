@@ -8,7 +8,7 @@ import (
 	"github.com/fragmenta/view"
 	"github.com/fragmenta/view/helpers"
 
-	".."
+	"bitbucket.org/kennygrant/frithandco/src/[[ .fragmenta_resources ]]"
 )
 
 // Serve a get request at /[[ .fragmenta_resources ]]/1
