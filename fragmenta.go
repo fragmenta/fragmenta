@@ -13,7 +13,7 @@ import (
 	"sort"
 )
 
-const fragmentaVersion = "1.0"
+const fragmentaVersion = "1.0.1"
 const fragmentaDivider = "\n------\n"
 
 //const APP_NAME = "fragmenta-server" // this should be settable in config
@@ -43,7 +43,14 @@ func serverPath(projectPath string) string {
 }
 
 func appPath(projectPath string) string {
-	return projectPath + "/src/app"
+
+	// Check for old style app path (no server.go in root)
+	_, err := os.Stat(path.Join(projectPath, "server.go"))
+	if err != nil {
+		return path.Join(projectPath, "src", "app")
+	}
+
+	return projectPath
 }
 
 func configPath(projectPath string) string {
