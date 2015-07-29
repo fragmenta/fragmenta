@@ -47,7 +47,7 @@ func appPath(projectPath string) string {
 	// Check for old style app path (no server.go in root)
 	_, err := os.Stat(path.Join(projectPath, "server.go"))
 	if err != nil {
-		return path.Join(projectPath, "src", "app")
+		return projectPath + "/src/app"
 	}
 
 	return projectPath
