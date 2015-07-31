@@ -8,11 +8,10 @@ import (
 	"github.com/fragmenta/view"
 	"github.com/fragmenta/view/helpers"
 
-	"bitbucket.org/kennygrant/frithandco/src/[[ .fragmenta_resources ]]"
+	"[[ .fragmenta_generate ]]/[[ .fragmenta_resources ]]"
 )
 
-// Serve a get request at /[[ .fragmenta_resources ]]/1
-
+// HandleShow displays a single [[ .fragmenta_resource ]]
 func HandleShow(context *router.Context) {
 
 	// Setup context for template

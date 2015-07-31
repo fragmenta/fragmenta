@@ -7,10 +7,10 @@ import (
 	"github.com/fragmenta/router"
 	"github.com/fragmenta/view"
 
-	"bitbucket.org/kennygrant/frithandco/src/[[ .fragmenta_resources ]]"
+	"[[ .fragmenta_generate ]]/[[ .fragmenta_resources ]]"
 )
 
-// POST /[[ .fragmenta_resources ]]/1/destroy
+// HandleDestroy handles a DESTROY request for [[ .fragmenta_resources ]]
 func HandleDestroy(context *router.Context) {
 
 	// Set the [[ .fragmenta_resource ]] on the context for checking

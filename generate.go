@@ -105,35 +105,6 @@ func generateResource(args []string) {
 
 	}
 
-	// We also need to generate the resource routes to have
-	// add and remove methods - perhaps something like:
-
-	// pages/1/add/comment/43
-	// pages/1/remove/comment/43
-
-	/*
-
-	   FIXME - also generate methods to retrieve comments attached to page as a list
-	   -- better to make this a query, so we can do:
-	   page.Comments().Where("published=?",3).Fetch()
-
-	   // Then where we just need ids, we could do Select("id from pages")
-
-
-	   func Comments() q *query.Query {
-	       q = Query.New("comments")
-	       q.Join("pages")
-	       q.Where("page_id=?"m.Id)
-	       return q
-	   }
-
-	   func (m *Page)OwnedByPage(q *query.Query) *query.Query {
-	       return q.Where("page_id=?",m.Id)
-	   }
-
-
-	*/
-
 	// First db migration
 	generateResourceMigration(joinSql)
 
@@ -145,11 +116,10 @@ func generateResource(args []string) {
 
 }
 
-// Generate the routes required and insert them into the src/app/routes.go file
+// Generate the routes required and insert them into the routes.go file
 func generateResourceRoutes() {
 
-	// THESE SHOULD ALL BE IN FILES // FIXME
-
+	// TODO - this routesTemplate should be a file
 	routesTemplate := `
     r.Add("/[[.fragmenta_resources]]", [[.fragmenta_resource]]_actions.HandleIndex)
     r.Add("/[[.fragmenta_resources]]/create", [[.fragmenta_resource]]_actions.HandleCreateShow)
@@ -161,33 +131,37 @@ func generateResourceRoutes() {
 
 	resourceRoutes := reifyString(routesTemplate)
 
-	// Find the routes.go file, and add the routes at the start of setRoutes()
-	path := "./src/app/routes.go"
-	data, err := ioutil.ReadFile(path)
+	routesPath := appRoutesFilePath()
+	data, err := ioutil.ReadFile(routesPath)
 	if err != nil {
-		fmt.Println("Error reading routes file: ", path)
+		fmt.Printf("#error Error reading routes at:%s :%s", routesPath, err)
 		return
 	}
 
+	fmt.Println("Generating resource routes at: ", routesPath)
+
 	routes := string(data)
 
-	if strings.Contains(routes, resourceName+"_actions.HandleIndex") {
+	if strings.Contains(routes, ToPlural(resourceName)+"/actions") {
 		fmt.Println("Routes already exist for resource: ", resourceName)
 		return
 	}
 
-	routesStart := "func setupRoutes(r *router.Router) {"
+	routesStart := "func SetupRoutes(r *router.Router) {"
 	routes = strings.Replace(routes, routesStart, routesStart+"\n"+resourceRoutes, 1)
 
-	resourceImport := reifyString("\n\t\"../[[.fragmenta_resources]]/actions\"")
+	resourceImport := reifyString("\n\t\"[[.fragmenta_generate]]/[[.fragmenta_resources]]/actions\"")
 	importStart := "import ("
 	routes = strings.Replace(routes, importStart, importStart+resourceImport, 1)
 
-	err = ioutil.WriteFile(path, []byte(routes), 0774)
+	err = ioutil.WriteFile(routesPath, []byte(routes), 0774)
 	if err != nil {
-		fmt.Println("Error writing routes file: ", path)
+		fmt.Println("Error writing routes file: ", routesPath)
 		return
 	}
+
+	fmt.Println("Generated resource routes")
+
 }
 
 // Generate SQL for a join table migration
@@ -250,23 +224,60 @@ status int,
 
 }
 
-func generateResourceFiles() {
-
-	srcPath := path.Join(".", "src", "lib", "templates", "fragmenta_resources")
-
-	// If we don't have a local resources file,
-	// fall back on cloning repo and using the default resource templates
-	_, err := os.Stat(srcPath)
-	if err != nil {
-		log.Printf("No local template files at %s", srcPath)
-
-		// Use our internal templates path instead (inside the fragmenta package)
-		srcPath = path.Join(templatesPath(), "fragmenta_resources")
-		log.Printf("Using templates at %s", srcPath)
+// Return the path of the routes.go file
+func appRoutesFilePath() string {
+	// Find the routes.go file, and add the routes at the start of setRoutes()
+	// We expect a config option to be set on development
+	// otherwise we default to ./src/app/routes.go
+	routesPath := ConfigDevelopment["path_routes"]
+	if len(routesPath) == 0 {
+		routesPath = "src/app/routes.go"
 	}
 
-	//  srcPathPattern := strings.Trim(srcPath,".") + "/"
-	dstPath := path.Join(".", "src", ToPlural(resourceName))
+	return routesPath
+}
+
+func appTemplatesPath() string {
+	return path.Join(fullAppPath(), "templates", "fragmenta_resources")
+}
+
+func appGeneratePath() string {
+	codePath := ConfigDevelopment["path_generate"]
+	if len(codePath) == 0 {
+		codePath = "src"
+	}
+	return codePath
+}
+
+func fullAppPath() string {
+	// Golang expects all source under GOPATH/src
+	return path.Join(os.ExpandEnv("$GOPATH"), "src", appPath())
+}
+
+func appPath() string {
+	return ConfigDevelopment["path"]
+}
+
+func appServerName() string {
+	return path.Base(ConfigDevelopment["path"])
+}
+
+func generateResourceFiles() {
+
+	srcPath := appTemplatesPath()
+
+	// Try to use local templates, if not use the fragmenta default templates
+	_, err := os.Stat(srcPath)
+	if err != nil {
+		// Use our internal templates path instead (inside the fragmenta package)
+		log.Printf("No local template files at %s", srcPath)
+		srcPath = path.Join(templatesPath(), "fragmenta_resources")
+	}
+
+	log.Printf("Using templates at %s", srcPath)
+
+	// For a destination, use the set path or default to ./src/xxx
+	dstPath := path.Join(fullAppPath(), appGeneratePath(), ToPlural(resourceName))
 
 	fmt.Printf("Creating files at %s\n", dstPath)
 	copyAndReifyFiles(srcPath, dstPath)
@@ -473,6 +484,8 @@ func formFields() string {
 
 // Make this file name concrete by substituting values
 func reifyName(name string) string {
+	name = strings.Replace(name, ".go.tmpl", ".go", -1)   // go files
+	name = strings.Replace(name, ".got.tmpl", ".got", -1) // template files
 	name = strings.Replace(name, "fragmenta_resource", resourceName, -1)
 	name = strings.Replace(name, "fragmenta_resources", ToPlural(resourceName), -1)
 	return name
@@ -481,6 +494,7 @@ func reifyName(name string) string {
 // Make this template string concrete by filling in values
 func reifyString(tmpl string) string {
 	context := map[string]string{
+		"fragmenta_generate":    path.Join(appPath(), appGeneratePath()),
 		"fragmenta_resources":   ToPlural(resourceName),
 		"fragmenta_resource":    resourceName,
 		"Fragmenta_Resources":   ToCamel(ToPlural(resourceName)),
@@ -490,7 +504,7 @@ func reifyString(tmpl string) string {
 		"fragmenta_show_fields": showFields(),
 		"fragmenta_new_fields":  newFields(),
 		"fragmenta_columns":     showcolumns(),
-		"fragmenta_db_user":     "booking_server", // FIXME - load app config
+		"fragmenta_db_user":     appServerName(),
 	}
 
 	return renderTemplate(tmpl, context)

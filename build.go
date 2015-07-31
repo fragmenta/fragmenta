@@ -35,7 +35,7 @@ func buildServer(server string, env []string) error {
 
 	if err == nil {
 		// Go imports behaviour differs from go fmt
-		srcPath := "./src"
+		srcPath := "./"
 		log.Printf("Running goimports at %s", srcPath)
 		result, err := runCommand("goimports", "-w", srcPath)
 		if err != nil {
@@ -47,7 +47,7 @@ func buildServer(server string, env []string) error {
 		}
 
 	} else {
-		srcPath := "./src/..."
+		srcPath := "./..."
 		// Run go fmt on any packages with src
 		log.Printf("Running go fmt at %s", srcPath)
 		result, err := runCommand("go", "fmt", srcPath)
@@ -64,10 +64,10 @@ func buildServer(server string, env []string) error {
 	log.Printf("Building server at %s", server)
 	started := time.Now()
 
-	log.Printf("CMD %s %s %s %s %s", "go", "build", "-o", server, appPath("."))
+	log.Printf("CMD %s %s %s %s %s", "go", "build", "-o", server, serverCompilePath("."))
 
 	// NB we set environment here because we may be cross=compiling
-	cmd := exec.Command("go", "build", "-o", server, appPath("."))
+	cmd := exec.Command("go", "build", "-o", server, serverCompilePath("."))
 	cmd.Stderr = os.Stdout
 
 	if env != nil {

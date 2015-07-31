@@ -13,7 +13,7 @@ import (
 	"sort"
 )
 
-const fragmentaVersion = "1.0.1"
+const fragmentaVersion = "1.0.2"
 const fragmentaDivider = "\n------\n"
 
 //const APP_NAME = "fragmenta-server" // this should be settable in config
@@ -42,7 +42,7 @@ func serverPath(projectPath string) string {
 	return fmt.Sprintf("%s/bin/%s", projectPath, serverName())
 }
 
-func appPath(projectPath string) string {
+func serverCompilePath(projectPath string) string {
 
 	// Check for old style app path (no server.go in root)
 	_, err := os.Stat(path.Join(projectPath, "server.go"))
@@ -75,6 +75,8 @@ func main() {
 
 	// We should intelligently read project path depending on the command?
 	// Or just assume we act on the current directory?
+	// NB projectPath might be different from the path in config, which MUST be within a GOPATH
+	// this is the local project path
 	projectPath := "."
 
 	// Will we ever act on another path?
@@ -222,7 +224,7 @@ func requireValidProject(projectPath string) bool {
 
 func isValidProject(projectPath string) bool {
 
-	_, err := os.Stat(appPath(projectPath))
+	_, err := os.Stat(serverCompilePath(projectPath))
 	if err != nil {
 		return false
 	}

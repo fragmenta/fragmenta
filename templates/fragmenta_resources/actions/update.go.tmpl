@@ -8,10 +8,10 @@ import (
 	"github.com/fragmenta/view"
 	"github.com/fragmenta/view/helpers"
 
-	"bitbucket.org/kennygrant/frithandco/src/[[ .fragmenta_resources ]]"
+	"[[ .fragmenta_generate ]]/[[ .fragmenta_resources ]]"
 )
 
-// Serve a get request at /[[ .fragmenta_resources ]]/1/update (show form to update)
+// HandleUpdateShow renders the form to update a [[ .fragmenta_resource ]]
 func HandleUpdateShow(context *router.Context) {
 	// Setup context for template
 	view := view.New(context)
@@ -35,7 +35,7 @@ func HandleUpdateShow(context *router.Context) {
 	view.Render(context.Writer)
 }
 
-// POST or PUT /[[ .fragmenta_resources ]]/1/update
+// HandleUpdateShow handles the POST of the form to update a [[ .fragmenta_resource ]]
 func HandleUpdate(context *router.Context) {
 	// Setup context for template
 	view := view.New(context)

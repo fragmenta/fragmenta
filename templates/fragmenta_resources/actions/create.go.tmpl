@@ -7,10 +7,10 @@ import (
 	"github.com/fragmenta/router"
 	"github.com/fragmenta/view"
 
-    "bitbucket.org/kennygrant/frithandco/src/[[ .fragmenta_resources ]]"
+	"[[ .fragmenta_generate ]]/[[ .fragmenta_resources ]]"
 )
 
-// GET [[ .fragmenta_resources ]]/create
+// HandleCreateShow serves the create form via GET for [[ .fragmenta_resources ]]
 func HandleCreateShow(context *router.Context) {
 
 	// Authorize
@@ -28,7 +28,7 @@ func HandleCreateShow(context *router.Context) {
 	view.Render(context.Writer)
 }
 
-// POST [[ .fragmenta_resources ]]/create
+// HandleCreate handles the POST of the create form for [[ .fragmenta_resources ]]
 func HandleCreate(context *router.Context) {
 
 	// Authorize
@@ -62,5 +62,3 @@ func HandleCreate(context *router.Context) {
 
 	router.Redirect(context, url.Index(m))
 }
-
-

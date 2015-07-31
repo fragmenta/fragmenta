@@ -5,19 +5,20 @@ import (
 	"log"
 )
 
+// runTests runs all tests below the current path or the path specified
 func runTests(args []string) {
 	// Remove fragmenta test from args list
 	args = args[2:]
 
-	test_dir := "./src/..."
+	testDir := "./..."
 
 	if len(args) > 0 {
-		test_dir = fmt.Sprintf("./src/%s", args[0])
+		testDir = fmt.Sprintf("./%s", args[0])
 	}
 
-	log.Printf("Running tests at %s", test_dir)
+	log.Printf("Running tests at %s", testDir)
 
-	result, err := runCommand("go", "test", "-v", test_dir)
+	result, err := runCommand("go", "test", "-v", testDir)
 	if err != nil {
 		log.Printf("Error running tests %s", err)
 	}
