@@ -201,8 +201,8 @@ func generateResourceMigration(joinsSQL string) {
 	sql := `DROP TABLE [[.fragmenta_resources]];
 CREATE TABLE [[.fragmenta_resources]] (
 id SERIAL NOT NULL,
-created_at timestamp with time zone,
-updated_at timestamp with time zone,
+created_at timestamp,
+updated_at timestamp,
 status int,
 `
 
@@ -557,7 +557,7 @@ func toSQLType(fieldType string) string {
 	case "int", "int64", "integer", "bigint":
 		return "integer"
 	case "timestamp", "time", "datetime", "date":
-		return "timestamp with time zone"
+		return "timestamp"
 	case "float":
 		return "real"
 	case "double":
