@@ -13,11 +13,11 @@ import (
 	"sort"
 )
 
-const fragmentaVersion = "1.0.2"
-const fragmentaDivider = "\n------\n"
+// FIXME - move all instances of hardcoded paths out into optional app config variables
+// Ideally we don't care about project structure apart from the load the fragmenta.json file
 
-//const APP_NAME = "fragmenta-server" // this should be settable in config
-//const GO = "/usr/local/go/bin/go"
+const fragmentaVersion = "1.0.3"
+const fragmentaDivider = "\n------\n"
 
 // The development config from fragmenta.json
 var ConfigDevelopment map[string]string
@@ -28,8 +28,7 @@ var ConfigProduction map[string]string
 // The app test config from fragmenta.json
 var ConfigTest map[string]string
 
-// NB NEVER use fragmenta, for obvious reasons - we use the process name to kill
-// can we kill our launched processes by pid instead?
+// serverName returns the name of our server file - TODO:read from config
 func serverName() string {
 	return "fragmenta-server" // for now, should use configs
 }
@@ -51,6 +50,16 @@ func serverCompilePath(projectPath string) string {
 	}
 
 	return projectPath
+}
+
+// Return the src to scan assets for compilation
+// Can this be set within the project setup instead to avoid hardcoding here?
+func srcPath(projectPath string) string {
+	return projectPath + "src"
+}
+
+func publicPath(projectPath string) string {
+	return projectPath + "public"
 }
 
 func configPath(projectPath string) string {
@@ -180,15 +189,13 @@ func runServer(projectPath string) {
 
 	killServer()
 
+	log.Println("Building server...")
 	err := buildServer(localServerPath(projectPath), nil)
 
 	if err != nil {
 		log.Printf("Error building server: %s", err)
 		return
 	}
-
-	log.Println("Building server...")
-	buildAssets(projectPath)
 
 	log.Println("Launching server...")
 	cmd := exec.Command(localServerPath(projectPath))
@@ -206,10 +213,6 @@ func runServer(projectPath string) {
 
 func killServer() {
 	runCommand("killall", "-9", serverName())
-}
-
-func buildAssets(path string) {
-
 }
 
 func requireValidProject(projectPath string) bool {

@@ -3,11 +3,17 @@ package main
 import (
 	"log"
 	"os"
+
+	// We depend on assets in order to build - how to tell user doesn't want assets?
+	"github.com/fragmenta/assets"
 )
 
 // If it exists, simply run the binary in bin/deploy
 // (this might be a shell script which runs ansible for example)
 func runDeploy(args []string) {
+
+	// Build our app assets and update secrets/assets.json
+	buildAssets()
 
 	// Build deploy server
 	buildDeployServer()
@@ -34,4 +40,13 @@ func runDeploy(args []string) {
 	}
 
 	log.Printf(string(result))
+}
+
+// Compile the app assets before a deploy, so that they're available for production use
+func buildAssets() {
+	log.Printf("#debug Compiling assets...")
+	err := assets.New(true).Compile("src", "public")
+	if err != nil {
+		log.Fatalf("#error compiling assets %s", err)
+	}
 }
