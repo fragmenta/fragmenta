@@ -44,7 +44,7 @@ func runDeploy(args []string) {
 
 // Compile the app assets before a deploy, so that they're available for production use
 func buildAssets() {
-	log.Printf("#debug Compiling assets...")
+	log.Printf("Compiling assets...")
 	err := assets.New(true).Compile("src", "public")
 	if err != nil {
 		log.Fatalf("#error compiling assets %s", err)
