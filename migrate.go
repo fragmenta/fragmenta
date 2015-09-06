@@ -64,11 +64,12 @@ func migrateDB(config map[string]string) {
 			args := []string{"-d", config["db"], "-f", file}
 			if strings.Contains(filename, createDatabaseMigrationName) {
 				args = []string{"-f", file}
+				log.Printf("Running database creation migration: %s", file)
 			}
 
 			// Execute this sql file against the database
 			result, err := runCommand("psql", args...)
-			if err != nil {
+			if err != nil || strings.Contains(string(result), "ERROR") {
 				// If at any point we fail, log it and break
 				log.Printf("ERROR loading sql migration %s", err)
 				log.Printf("This and all future migrations cancelled %s", err)
