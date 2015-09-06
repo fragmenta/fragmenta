@@ -15,6 +15,10 @@ import (
 	"time"
 )
 
+const (
+	permissions = 0744
+)
+
 // FIXME - perhaps remove these package variables and do this in a neater way
 var resourceName string
 var columns map[string]string
@@ -121,13 +125,13 @@ func generateResourceRoutes() {
 
 	// TODO - this routesTemplate should be a file
 	routesTemplate := `
-    r.Add("/[[.fragmenta_resources]]", [[.fragmenta_resource]]_actions.HandleIndex)
-    r.Add("/[[.fragmenta_resources]]/create", [[.fragmenta_resource]]_actions.HandleCreateShow)
-    r.Add("/[[.fragmenta_resources]]/create", [[.fragmenta_resource]]_actions.HandleCreate).Post()
-    r.Add("/[[.fragmenta_resources]]/{id:[0-9]+}/update", [[.fragmenta_resource]]_actions.HandleUpdateShow)
-    r.Add("/[[.fragmenta_resources]]/{id:[0-9]+}/update", [[.fragmenta_resource]]_actions.HandleUpdate).Post()
-    r.Add("/[[.fragmenta_resources]]/{id:[0-9]+}/destroy", [[.fragmenta_resource]]_actions.HandleDestroy).Post()
-    r.Add("/[[.fragmenta_resources]]/{id:[0-9]+}", [[.fragmenta_resource]]_actions.HandleShow)`
+    r.Add("/[[.fragmenta_resources]]", [[.fragmenta_resource]]actions.HandleIndex)
+    r.Add("/[[.fragmenta_resources]]/create", [[.fragmenta_resource]]actions.HandleCreateShow)
+    r.Add("/[[.fragmenta_resources]]/create", [[.fragmenta_resource]]actions.HandleCreate).Post()
+    r.Add("/[[.fragmenta_resources]]/{id:[0-9]+}/update", [[.fragmenta_resource]]actions.HandleUpdateShow)
+    r.Add("/[[.fragmenta_resources]]/{id:[0-9]+}/update", [[.fragmenta_resource]]actions.HandleUpdate).Post()
+    r.Add("/[[.fragmenta_resources]]/{id:[0-9]+}/destroy", [[.fragmenta_resource]]actions.HandleDestroy).Post()
+    r.Add("/[[.fragmenta_resources]]/{id:[0-9]+}", [[.fragmenta_resource]]actions.HandleShow)`
 
 	resourceRoutes := reifyString(routesTemplate)
 
@@ -147,14 +151,14 @@ func generateResourceRoutes() {
 		return
 	}
 
-	routesStart := "func SetupRoutes(r *router.Router) {"
+	routesStart := "func setupRoutes(r *router.Router) {"
 	routes = strings.Replace(routes, routesStart, routesStart+"\n"+resourceRoutes, 1)
 
-	resourceImport := reifyString("\n\t\"[[.fragmenta_generate]]/[[.fragmenta_resources]]/actions\"")
+	resourceImport := reifyString("\n\t\"[[.fragmenta_app_path]]/[[.fragmenta_resources]]/actions\"")
 	importStart := "import ("
 	routes = strings.Replace(routes, importStart, importStart+resourceImport, 1)
 
-	err = ioutil.WriteFile(routesPath, []byte(routes), 0774)
+	err = ioutil.WriteFile(routesPath, []byte(routes), permissions)
 	if err != nil {
 		fmt.Println("Error writing routes file: ", routesPath)
 		return
@@ -213,7 +217,7 @@ status int,
 	sql = sql + ");\n"
 	sql = strings.Replace(sql, ",\n)", "\n)", -1)
 
-	sql += "ALTER table [[.fragmenta_resources]] owner to [[.fragmenta_db_user]];\n"
+	sql += "ALTER TABLE [[.fragmenta_resources]] OWNER TO [[.fragmenta_db_user]];\n"
 
 	sql = reifyString(sql)
 
@@ -237,10 +241,6 @@ func appRoutesFilePath() string {
 	return routesPath
 }
 
-func appTemplatesPath() string {
-	return path.Join(fullAppPath(), "templates", "fragmenta_resources")
-}
-
 func appGeneratePath() string {
 	codePath := ConfigDevelopment["path_generate"]
 	if len(codePath) == 0 {
@@ -262,6 +262,10 @@ func appServerName() string {
 	return path.Base(ConfigDevelopment["path"])
 }
 
+func appTemplatesPath() string {
+	return path.Join(fullAppPath(), "src", "lib", "templates", "fragmenta_resources")
+}
+
 func generateResourceFiles() {
 
 	srcPath := appTemplatesPath()
@@ -270,8 +274,8 @@ func generateResourceFiles() {
 	_, err := os.Stat(srcPath)
 	if err != nil {
 		// Use our internal templates path instead (inside the fragmenta package)
-		log.Printf("No local template files at %s", srcPath)
-		srcPath = path.Join(templatesPath(), "fragmenta_resources")
+		log.Printf("No template files at %s", srcPath)
+		//	srcPath = path.Join(templatesPath(), "fragmenta_resources")
 	}
 
 	log.Printf("Using templates at %s", srcPath)
@@ -318,7 +322,7 @@ func copyAndReifyFiles(srcPath string, dstPath string) error {
 
 			// If this entry is a dir, just make sure it exists
 			if info.IsDir() {
-				os.MkdirAll(dstPath, 0774)
+				os.MkdirAll(dstPath, permissions)
 				return nil
 			}
 
@@ -346,10 +350,10 @@ func copyAndReifyFiles(srcPath string, dstPath string) error {
 	output := reifyString(string(template))
 
 	// Make sure enclosing dir exists
-	os.MkdirAll(path.Dir(dstPath), 0774)
+	os.MkdirAll(path.Dir(dstPath), permissions)
 
 	// Now write out again at same path
-	err = ioutil.WriteFile(dstPath, []byte(output), 0774)
+	err = ioutil.WriteFile(dstPath, []byte(output), permissions)
 	if err != nil {
 		log.Fatal("Error writing file ", dstPath)
 	}
@@ -494,7 +498,7 @@ func reifyName(name string) string {
 // Make this template string concrete by filling in values
 func reifyString(tmpl string) string {
 	context := map[string]string{
-		"fragmenta_generate":    path.Join(appPath(), appGeneratePath()),
+		"fragmenta_app_path":    path.Join(appPath(), appGeneratePath()),
 		"fragmenta_resources":   ToPlural(resourceName),
 		"fragmenta_resource":    resourceName,
 		"Fragmenta_Resources":   ToCamel(ToPlural(resourceName)),
@@ -504,7 +508,9 @@ func reifyString(tmpl string) string {
 		"fragmenta_show_fields": showFields(),
 		"fragmenta_new_fields":  newFields(),
 		"fragmenta_columns":     showcolumns(),
-		"fragmenta_db_user":     appServerName(),
+		"fragmenta_db":          ConfigDevelopment["db"],
+		"fragmenta_db_user":     ConfigDevelopment["db_user"],
+		"fragmenta_app_name":    appServerName(),
 	}
 
 	return renderTemplate(tmpl, context)
@@ -580,6 +586,16 @@ func toInputType(fieldType string) string {
 	default:
 		return fieldType
 	}
+}
+
+// sortedKeys returns the string keys of a map[string] sorted
+func sortedKeys(m map[string]string) []string {
+	var keys []string
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
 }
 
 // ------------------------- MIGRATIONS  --------------

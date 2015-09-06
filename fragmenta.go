@@ -10,23 +10,31 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"sort"
+	"path/filepath"
 )
 
 // FIXME - move all instances of hardcoded paths out into optional app config variables
 // Ideally we don't care about project structure apart from the load the fragmenta.json file
 
-const fragmentaVersion = "1.0.3"
-const fragmentaDivider = "\n------\n"
+const (
+	// The version of this tool
+	fragmentaVersion = "1.1"
 
-// The development config from fragmenta.json
-var ConfigDevelopment map[string]string
+	// Used for outputting console messages
+	fragmentaDivider = "\n------\n"
+)
 
-// The development config from fragmenta.json
-var ConfigProduction map[string]string
+var (
 
-// The app test config from fragmenta.json
-var ConfigTest map[string]string
+	// The development config from fragmenta.json
+	ConfigDevelopment map[string]string
+
+	// The development config from fragmenta.json
+	ConfigProduction map[string]string
+
+	// The app test config from fragmenta.json
+	ConfigTest map[string]string
+)
 
 // serverName returns the name of our server file - TODO:read from config
 func serverName() string {
@@ -42,10 +50,13 @@ func serverPath(projectPath string) string {
 }
 
 func serverCompilePath(projectPath string) string {
+	// When older app converted, change to:
+	// return path.Join(projectPath, "server.go")
 
-	// Check for old style app path (no server.go in root)
 	_, err := os.Stat(path.Join(projectPath, "server.go"))
 	if err != nil {
+
+		// Check for old style app path (no server.go in root)
 		return projectPath + "/src/app"
 	}
 
@@ -86,9 +97,11 @@ func main() {
 	// Or just assume we act on the current directory?
 	// NB projectPath might be different from the path in config, which MUST be within a GOPATH
 	// this is the local project path
-	projectPath := "."
-
-	// Will we ever act on another path?
+	projectPath, err := filepath.Abs(".")
+	if err != nil {
+		log.Printf("Error getting path", err)
+		return
+	}
 	if isValidProject(projectPath) {
 		readConfig(projectPath)
 	}
@@ -168,7 +181,7 @@ func showHelp(args []string) {
 	helpString += fmt.Sprintf("Fragmenta version: %s", fragmentaVersion)
 	helpString += "\n  fragmenta version -> display version"
 	helpString += "\n  fragmenta help -> display help"
-	helpString += "\n  fragmenta new [path/to/app] -> creates a new app at the path supplied"
+	helpString += "\n  fragmenta new [type|URL] path/to/app -> creates a new app from the repository at the URL at the path supplied"
 	helpString += "\n  fragmenta server -> runs server locally"
 	helpString += "\n  fragmenta -> also runs server locally"
 	helpString += "\n  fragmenta test  -> run tests"
@@ -215,31 +228,6 @@ func killServer() {
 	runCommand("killall", "-9", serverName())
 }
 
-func requireValidProject(projectPath string) bool {
-	if isValidProject(projectPath) {
-		return true
-	}
-
-	log.Printf("\nNo fragmenta project found at this path\n")
-	return false
-
-}
-
-func isValidProject(projectPath string) bool {
-
-	_, err := os.Stat(serverCompilePath(projectPath))
-	if err != nil {
-		return false
-	}
-
-	_, err = os.Stat(configPath(projectPath))
-	if err != nil {
-		return false
-	}
-
-	return true
-}
-
 func runCommand(command string, args ...string) ([]byte, error) {
 
 	cmd := exec.Command(command, args...)
@@ -253,57 +241,62 @@ func runCommand(command string, args ...string) ([]byte, error) {
 	return output, nil
 }
 
-// Read our config file and set up the server accordingly
-func readConfig(projectPath string) {
+func requireValidProject(projectPath string) bool {
+	if isValidProject(projectPath) {
+		return true
+	}
 
-	c := configPath(projectPath)
+	log.Printf("\nNo fragmenta project found at this path\n")
+	return false
+
+}
+
+func isValidProject(projectPath string) bool {
+
+	// Make sure we have server.go
+	_, err := os.Stat(serverCompilePath(projectPath))
+	if err != nil {
+		return false
+	}
+
+	_, err = os.Stat(configPath(projectPath))
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+func fileExists(p string) bool {
+	_, err := os.Stat(p)
+	if err != nil && os.IsNotExist(err) {
+		return false
+	}
+
+	return true
+}
+
+// Read our config file and set up the server accordingly
+func readConfig(projectPath string) error {
+	configPath := configPath(projectPath)
 
 	// Read the config json file
-	file, err := ioutil.ReadFile(c)
+	file, err := ioutil.ReadFile(configPath)
 	if err != nil {
-		log.Printf("Error opening config %s %v", c, err)
-		return
+		log.Printf("Error opening config %s %v", configPath, err)
+		return err
 	}
 
 	var data map[string]map[string]string
 	err = json.Unmarshal(file, &data)
 	if err != nil {
-		log.Printf("Error parsing config %s %v", c, err)
-		return
+		log.Printf("Error parsing config %s %v", configPath, err)
+		return err
 	}
 
 	ConfigDevelopment = data["development"]
 	ConfigProduction = data["production"]
 	ConfigTest = data["test"]
-}
 
-func cloneExamples(projectPath string) string {
-	tmpDir := path.Join(os.TempDir(), ".fragmenta-examples")
-	repo := "https://github.com/fragmenta/examples.git"
-
-	// If templates already exists at tmpDir we remove it to avoid potential git conflicts
-	// This means we clone each time this function is called...
-	_, err := os.Stat(tmpDir)
-	if err == nil {
-		os.RemoveAll(tmpDir)
-	}
-
-	// Clone the examples repo
-	result, err := runCommand("git", "clone", "--depth", "1", repo, tmpDir)
-	if err != nil {
-		log.Printf("Error calling git %s", err)
-		return tmpDir
-	}
-	log.Printf("%s", string(result))
-
-	return tmpDir
-}
-
-func sortedKeys(m map[string]string) []string {
-	var keys []string
-	for k := range m {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	return keys
+	return nil
 }
