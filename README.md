@@ -37,3 +37,20 @@ The pkg layout within the app is up to you - defaults are provided but are not m
 * * pages.go -> the resource model file
 * * pages_test.go -> tests for this model
 * * views -> views for this resource
+
+
+### Libraries
+
+The following independent packages are available for use with fragmenta apps (or other go web apps). 
+
+* assets - an asset pipeline with minification and concatenation with asset fingerprinting
+* auth - utilities for authentication and authorisation
+* fragmenta - a command line tool for generating and developing websites
+* model - a base model class for optional inclusion in models
+* * file - a package for handling file uploads
+* * validate - a package for handling field validation
+* query - a query builder and result wrapper for mysql, psql and optionally sqlite
+* router - a router which allows pattern matching, routes, redirects, filters and provides a handler interface
+* server - a simple server based on http.listenandserve
+* view - a library for rendering view templates using html/template
+* * helpers - helpers for form fields, currencies etc
