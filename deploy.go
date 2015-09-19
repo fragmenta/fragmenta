@@ -8,8 +8,7 @@ import (
 	"github.com/fragmenta/assets"
 )
 
-// If it exists, simply run the binary in bin/deploy
-// (this might be a shell script which runs ansible for example)
+// runDeploy builds the assets, builds the server, and then runs the script at ./bin/deploy if it exists
 func runDeploy(args []string) {
 
 	// Build our app assets and update secrets/assets.json
@@ -42,7 +41,7 @@ func runDeploy(args []string) {
 	log.Printf(string(result))
 }
 
-// Compile the app assets before a deploy, so that they're available for production use
+// buildAssets compiles the app assets before a deploy, so that they're available for production use
 func buildAssets() {
 	log.Printf("Compiling assets...")
 	err := assets.New(true).Compile("src", "public")

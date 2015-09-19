@@ -69,7 +69,6 @@ func generateResource(args []string) {
 	// args should be using snake case, which we will convert to camel case as necc.
 	resourceName = ""
 
-	// Why is this a global to the file? FIXME
 	columns = make(map[string]string, 0)
 	var joins []string
 

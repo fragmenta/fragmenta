@@ -13,75 +13,26 @@ import (
 	"path/filepath"
 )
 
-// FIXME - move all instances of hardcoded paths out into optional app config variables
-// Ideally we don't care about project structure apart from the load the fragmenta.json file
-
 const (
 	// The version of this tool
-	fragmentaVersion = "1.1"
+	fragmentaVersion = "1.2"
 
 	// Used for outputting console messages
 	fragmentaDivider = "\n------\n"
 )
 
 var (
-
-	// The development config from fragmenta.json
+	// ConfigDevelopment holds the development config from fragmenta.json
 	ConfigDevelopment map[string]string
 
-	// The development config from fragmenta.json
+	// ConfigProduction holds development config from fragmenta.json
 	ConfigProduction map[string]string
 
-	// The app test config from fragmenta.json
+	// ConfigTest holds the app test config from fragmenta.json
 	ConfigTest map[string]string
 )
 
-// serverName returns the name of our server file - TODO:read from config
-func serverName() string {
-	return "fragmenta-server" // for now, should use configs
-}
-
-func localServerPath(projectPath string) string {
-	return fmt.Sprintf("%s/bin/%s-local", projectPath, serverName())
-}
-
-func serverPath(projectPath string) string {
-	return fmt.Sprintf("%s/bin/%s", projectPath, serverName())
-}
-
-func serverCompilePath(projectPath string) string {
-	// When older app converted, change to:
-	// return path.Join(projectPath, "server.go")
-
-	_, err := os.Stat(path.Join(projectPath, "server.go"))
-	if err != nil {
-
-		// Check for old style app path (no server.go in root)
-		return projectPath + "/src/app"
-	}
-
-	return projectPath
-}
-
-// Return the src to scan assets for compilation
-// Can this be set within the project setup instead to avoid hardcoding here?
-func srcPath(projectPath string) string {
-	return projectPath + "src"
-}
-
-func publicPath(projectPath string) string {
-	return projectPath + "public"
-}
-
-func configPath(projectPath string) string {
-	return projectPath + "/secrets/fragmenta.json"
-}
-
-func templatesPath() string {
-	return os.ExpandEnv("$GOPATH/src/github.com/fragmenta/fragmenta/templates")
-}
-
-// Parse the command line arguments and respond
+// main - Parse the command line arguments and respond
 func main() {
 
 	log.SetFlags(log.Ltime)
@@ -99,7 +50,7 @@ func main() {
 	// this is the local project path
 	projectPath, err := filepath.Abs(".")
 	if err != nil {
-		log.Printf("Error getting path", err)
+		log.Printf("Error getting path %s", err)
 		return
 	}
 	if isValidProject(projectPath) {
@@ -167,7 +118,7 @@ func main() {
 
 }
 
-// Show the version of this tool
+// showVersion shows the version of this tool
 func showVersion() {
 	helpString := fragmentaDivider
 	helpString += fmt.Sprintf("Fragmenta version: %s", fragmentaVersion)
@@ -175,7 +126,7 @@ func showVersion() {
 	log.Print(helpString)
 }
 
-// Show the help for this tool.
+// showHelp shows the help for this tool
 func showHelp(args []string) {
 	helpString := fragmentaDivider
 	helpString += fmt.Sprintf("Fragmenta version: %s", fragmentaVersion)
@@ -196,7 +147,55 @@ func showHelp(args []string) {
 	log.Print(helpString)
 }
 
-// Run the server
+// FIXME - move all instances of hardcoded paths out into optional app config variables
+// Ideally we don't care about project structure apart from the load the fragmenta.json file
+
+// serverName returns the name of our server file - TODO:read from config
+func serverName() string {
+	return "fragmenta-server" // for now, should use configs
+}
+
+func localServerPath(projectPath string) string {
+	return fmt.Sprintf("%s/bin/%s-local", projectPath, serverName())
+}
+
+func serverPath(projectPath string) string {
+	return fmt.Sprintf("%s/bin/%s", projectPath, serverName())
+}
+
+func serverCompilePath(projectPath string) string {
+	// When older app converted, change to:
+	// return path.Join(projectPath, "server.go")
+
+	_, err := os.Stat(path.Join(projectPath, "server.go"))
+	if err != nil {
+
+		// Check for old style app path (no server.go in root)
+		return projectPath + "/src/app"
+	}
+
+	return projectPath
+}
+
+// Return the src to scan assets for compilation
+// Can this be set within the project setup instead to avoid hardcoding here?
+func srcPath(projectPath string) string {
+	return projectPath + "src"
+}
+
+func publicPath(projectPath string) string {
+	return projectPath + "public"
+}
+
+func configPath(projectPath string) string {
+	return projectPath + "/secrets/fragmenta.json"
+}
+
+func templatesPath() string {
+	return os.ExpandEnv("$GOPATH/src/github.com/fragmenta/fragmenta/templates")
+}
+
+// runServer runs the server
 func runServer(projectPath string) {
 	showVersion()
 
@@ -224,10 +223,12 @@ func runServer(projectPath string) {
 
 }
 
+// killServer kills the server with a unix command - FIXME:Windows
 func killServer() {
 	runCommand("killall", "-9", serverName())
 }
 
+// runCommand runs a command with exec.Command
 func runCommand(command string, args ...string) ([]byte, error) {
 
 	cmd := exec.Command(command, args...)
@@ -241,6 +242,7 @@ func runCommand(command string, args ...string) ([]byte, error) {
 	return output, nil
 }
 
+// requireValidProject returns true if we have a valid project at projectPath
 func requireValidProject(projectPath string) bool {
 	if isValidProject(projectPath) {
 		return true
@@ -251,6 +253,7 @@ func requireValidProject(projectPath string) bool {
 
 }
 
+// isValidProject returns true if this is a valid fragmenta project (checks for server.go file and config file)
 func isValidProject(projectPath string) bool {
 
 	// Make sure we have server.go
@@ -267,6 +270,7 @@ func isValidProject(projectPath string) bool {
 	return true
 }
 
+// fileExists returns true if this file exists
 func fileExists(p string) bool {
 	_, err := os.Stat(p)
 	if err != nil && os.IsNotExist(err) {
@@ -276,7 +280,7 @@ func fileExists(p string) bool {
 	return true
 }
 
-// Read our config file and set up the server accordingly
+// readConfig reads our config file and set up the server accordingly
 func readConfig(projectPath string) error {
 	configPath := configPath(projectPath)
 
