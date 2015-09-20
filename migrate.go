@@ -33,8 +33,7 @@ func RunMigrate(args []string) {
 // We use the fragmenta_metadata table to do this
 func migrateDB(config map[string]string) {
 	var migrations []string
-	var latestMigration string
-	var migrationCount int
+	var completed []string
 
 	// Get a list of migration files
 	files, err := filepath.Glob("./db/migrate/*.sql")
@@ -50,6 +49,7 @@ func migrateDB(config map[string]string) {
 	err = openDatabase(config)
 	if err != nil {
 		// if no db, proceed with empty migrations list
+		log.Printf("No database found")
 	} else {
 		migrations = readMetadata()
 	}
@@ -79,15 +79,14 @@ func migrateDB(config map[string]string) {
 				break
 			}
 
-			migrationCount++
-			latestMigration = filename
+			completed = append(completed, filename)
 			log.Printf("Completed migration %s\n%s\n%s", filename, string(result), fragmentaDivider)
 		}
 	}
 
-	if migrationCount > 0 {
-		writeMetadata(config, latestMigration)
-		log.Printf("Migrations complete up to migration %s on db %s\n\n", latestMigration, config["db"])
+	if len(completed) > 0 {
+		writeMetadata(config, completed)
+		log.Printf("Migrations complete up to migration %s on db %s\n\n", completed[len(completed)-1], config["db"])
 	} else {
 		log.Printf("No migrations to perform at path %s\n\n", "./db/migrate")
 	}
@@ -136,19 +135,22 @@ func readMetadata() []string {
 			log.Printf("Database ERROR %s", err)
 			return migrations
 		}
+		migrations = append(migrations, migration)
+
 	}
 
 	return migrations
 }
 
-// Update the database with a line recording what we have done
-func writeMetadata(config map[string]string, migrationVersion string) {
+// Update the database with row(s) recording what we have done
+func writeMetadata(config map[string]string, migrations []string) {
 
-	sql := "Insert into fragmenta_metadata(updated_at,fragmenta_version,migration_version,status) VALUES(NOW(),$1,$2,100);"
-
-	result, err := query.ExecSQL(sql, fragmentaVersion, migrationVersion)
-	if err != nil {
-		log.Printf("Database ERROR %s %s", err, result)
+	for _, m := range migrations {
+		sql := "Insert into fragmenta_metadata(updated_at,fragmenta_version,migration_version,status) VALUES(NOW(),$1,$2,100);"
+		result, err := query.ExecSQL(sql, fragmentaVersion, m)
+		if err != nil {
+			log.Printf("Database ERROR %s %s", err, result)
+		}
 	}
 
 }
