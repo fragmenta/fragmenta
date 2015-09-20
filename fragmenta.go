@@ -60,74 +60,74 @@ func main() {
 	switch command {
 
 	case "new", "n":
-		runNew(args)
+		RunNew(args)
 
 	case "version", "v":
-		showVersion()
+		ShowVersion()
 
 	case "help", "h", "wat", "?":
-		showHelp(args)
+		ShowHelp(args)
 
 	case "server", "s":
 		if requireValidProject(projectPath) {
-			runServer(projectPath)
+			RunServer(projectPath)
 		}
 
 	case "test", "t":
 		if requireValidProject(projectPath) {
-			runTests(args)
+			RunTests(args)
 		}
 
 	case "build", "B":
 		if requireValidProject(projectPath) {
-			runBuild(args)
+			RunBuild(args)
 		}
 
 	case "generate", "g":
 		if requireValidProject(projectPath) {
-			runGenerate(args)
+			RunGenerate(args)
 		}
 
 	case "migrate", "m":
 		if requireValidProject(projectPath) {
-			runMigrate(args)
+			RunMigrate(args)
 		}
 
 	case "backup", "b":
 		if requireValidProject(projectPath) {
-			runBackup(args)
+			RunBackup(args)
 		}
 
 	case "restore", "r":
 		if requireValidProject(projectPath) {
-			runRestore(args)
+			RunRestore(args)
 		}
 
 	case "deploy", "d":
 		if requireValidProject(projectPath) {
-			runDeploy(args)
+			RunDeploy(args)
 		}
 
 	default:
 		if requireValidProject(projectPath) {
-			runServer(projectPath)
+			RunServer(projectPath)
 		} else {
-			showHelp(args)
+			ShowHelp(args)
 		}
 	}
 
 }
 
-// showVersion shows the version of this tool
-func showVersion() {
+// ShowVersion shows the version of this tool
+func ShowVersion() {
 	helpString := fragmentaDivider
 	helpString += fmt.Sprintf("Fragmenta version: %s", fragmentaVersion)
 	helpString += fragmentaDivider
 	log.Print(helpString)
 }
 
-// showHelp shows the help for this tool
-func showHelp(args []string) {
+// ShowHelp shows the help for this tool
+func ShowHelp(args []string) {
 	helpString := fragmentaDivider
 	helpString += fmt.Sprintf("Fragmenta version: %s", fragmentaVersion)
 	helpString += "\n  fragmenta version -> display version"
@@ -195,9 +195,9 @@ func templatesPath() string {
 	return os.ExpandEnv("$GOPATH/src/github.com/fragmenta/fragmenta/templates")
 }
 
-// runServer runs the server
-func runServer(projectPath string) {
-	showVersion()
+// RunServer runs the server
+func RunServer(projectPath string) {
+	ShowVersion()
 
 	killServer()
 

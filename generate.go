@@ -23,11 +23,11 @@ const (
 var resourceName string
 var columns map[string]string
 
-// Run the generate command
+// RunGenerate runs the generate command
 // Expects:
 // - generate migration
 // - generate resource pages name:text summary:text
-func runGenerate(args []string) {
+func RunGenerate(args []string) {
 	// Remove fragmenta generate from args list
 	args = args[2:]
 
@@ -51,14 +51,10 @@ func runGenerate(args []string) {
 		}
 		sort.Strings(args)
 		name := fmt.Sprintf("%s-%s", args[0], args[1])
-		sql := generateJoinSql(args)
+		sql := generateJoinSQL(args)
 		generateMigration(name, sql)
-	case "server":
-		// This should generate a server file server.go in the root of the app
-		// To let them make this app go gettable without any need for fragmenta cmd!
-		// That would be really nice and quite simple to do - simply have cut down vsn of fragmenta
-		// which builds and runs an app locally
 	default:
+		fmt.Println("Sorry, I didn't recognise that argument, you can use fragmenta generate [migration|resource|join]")
 	}
 }
 
@@ -100,16 +96,16 @@ func generateResource(args []string) {
 	// NB we expect to start with a lower case singular
 	fmt.Printf("Generating resource with\n - name:%s\n - attributes:%v\n", resourceName, columns)
 
-	joinSql := ""
+	joinSQL := ""
 	if len(joins) > 0 {
 		for _, j := range joins {
-			joinSql += generateJoinSql([]string{resourceName, j})
+			joinSQL += generateJoinSQL([]string{resourceName, j})
 		}
 
 	}
 
 	// First db migration
-	generateResourceMigration(joinSql)
+	generateResourceMigration(joinSQL)
 
 	// Then generate routes
 	generateResourceRoutes()
@@ -168,7 +164,7 @@ func generateResourceRoutes() {
 }
 
 // Generate SQL for a join table migration
-func generateJoinSql(args []string) string {
+func generateJoinSQL(args []string) string {
 
 	if len(args) < 2 {
 		return ""

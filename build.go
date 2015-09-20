@@ -7,7 +7,8 @@ import (
 	"time"
 )
 
-func runBuild(args []string) {
+// RunBuild builds the server (either for deployment or for local use)
+func RunBuild(args []string) {
 	// Remove fragmenta build from args list
 	args = args[2:]
 

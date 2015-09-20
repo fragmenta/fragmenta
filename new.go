@@ -19,9 +19,9 @@ const (
 	createTablesMigrationName   = "Create-Tables"
 )
 
-// fragmenta new creates a new fragmenta project given the argument
+// RunNew creates a new fragmenta project given the argument
 // Usage: fragmenta new [app|cms|api| valid repo path e.g. github.com/fragmenta/fragmenta-cms]
-func runNew(args []string) {
+func RunNew(args []string) {
 
 	// Remove fragmenta backup from args list
 	args = args[2:]

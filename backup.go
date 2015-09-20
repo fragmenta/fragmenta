@@ -17,7 +17,8 @@ func fragmentaConfig(args []string) string {
 	return "development" // default to dev config
 }
 
-func runBackup(args []string) {
+// RunBackup creates a backup of the chosen database
+func RunBackup(args []string) {
 	// Remove fragmenta backup from args list
 	args = args[2:]
 
@@ -31,7 +32,8 @@ func runBackup(args []string) {
 	}
 }
 
-func runRestore(args []string) {
+// RunRestore restores the chosen database from a backup
+func RunRestore(args []string) {
 	// Remove fragmenta backup from args list
 	args = args[2:]
 

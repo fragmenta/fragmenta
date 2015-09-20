@@ -8,8 +8,8 @@ import (
 	"github.com/fragmenta/assets"
 )
 
-// runDeploy builds the assets, builds the server, and then runs the script at ./bin/deploy if it exists
-func runDeploy(args []string) {
+// RunDeploy builds the assets, builds the server, and then runs the script at ./bin/deploy if it exists
+func RunDeploy(args []string) {
 
 	// Build our app assets and update secrets/assets.json
 	buildAssets()

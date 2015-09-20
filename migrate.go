@@ -11,8 +11,8 @@ import (
 
 // We provide no facility to rollback at the moment, because rollbacks have all sorts of subtle issues and are not often useful IME.
 
-// runMigrate runs a migration
-func runMigrate(args []string) {
+// RunMigrate runs a migration
+func RunMigrate(args []string) {
 
 	// Remove fragmenta backup from args list
 	args = args[2:]
