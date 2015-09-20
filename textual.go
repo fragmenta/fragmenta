@@ -1,4 +1,3 @@
-// Package textual provides some simple functions for manipulating text.
 package main
 
 import (
