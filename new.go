@@ -187,7 +187,7 @@ func generateCreateSQL(projectPath string) error {
 	}
 
 	// If we have a Create-Tables file, copy it out to a new migration with today's date
-	createTablesPath := path.Join(projectPath, "db", "migrate", createTablesMigrationName+".sql")
+	createTablesPath := path.Join(projectPath, "db", "migrate", createTablesMigrationName+".sql.tmpl")
 	if fileExists(createTablesPath) {
 		sql, err := ioutil.ReadFile(createTablesPath)
 		if err != nil {

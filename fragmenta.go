@@ -232,9 +232,7 @@ func killServer() {
 func runCommand(command string, args ...string) ([]byte, error) {
 
 	cmd := exec.Command(command, args...)
-	cmd.Stderr = os.Stdout
-	//	cmd.Stderr = cmd.Stdout
-	output, err := cmd.Output()
+	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return output, err
 	}

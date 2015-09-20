@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/fragmenta/query"
 	"log"
 	"path"
@@ -11,7 +12,7 @@ import (
 
 // We provide no facility to rollback at the moment, because rollbacks have all sorts of subtle issues and are not often useful IME.
 
-// RunMigrate runs a migration
+// RunMigrate runs all pending migrations
 func RunMigrate(args []string) {
 
 	// Remove fragmenta backup from args list
@@ -31,9 +32,9 @@ func RunMigrate(args []string) {
 // Find the last run migration, and run all those after it in order
 // We use the fragmenta_metadata table to do this
 func migrateDB(config map[string]string) {
+	var migrations []string
 	var latestMigration string
 	var migrationCount int
-	var migrate bool
 
 	// Get a list of migration files
 	files, err := filepath.Glob("./db/migrate/*.sql")
@@ -48,17 +49,15 @@ func migrateDB(config map[string]string) {
 	// Try opening the db (db may not exist at this stage)
 	err = openDatabase(config)
 	if err != nil {
-		// if no db, migrate first
-		migrate = true
+		// if no db, proceed with empty migrations list
 	} else {
-		latestMigration = readMetadata()
+		migrations = readMetadata()
 	}
 
 	for _, file := range files {
 		filename := path.Base(file)
-		if filename == latestMigration {
-			migrate = true
-		} else if migrate {
+
+		if !contains(filename, migrations) {
 			log.Printf("Running migration %s", filename)
 
 			args := []string{"-d", config["db"], "-f", file}
@@ -70,9 +69,13 @@ func migrateDB(config map[string]string) {
 			// Execute this sql file against the database
 			result, err := runCommand("psql", args...)
 			if err != nil || strings.Contains(string(result), "ERROR") {
+				if err == nil {
+					err = fmt.Errorf("\n%s", string(result))
+				}
+
 				// If at any point we fail, log it and break
-				log.Printf("ERROR loading sql migration %s", err)
-				log.Printf("This and all future migrations cancelled %s", err)
+				log.Printf("ERROR loading sql migration:%s\n", err)
+				log.Printf("All further migrations cancelled\n\n")
 				break
 			}
 
@@ -86,7 +89,7 @@ func migrateDB(config map[string]string) {
 		writeMetadata(config, latestMigration)
 		log.Printf("Migrations complete up to migration %s on db %s\n\n", latestMigration, config["db"])
 	} else {
-		log.Printf("Database %s is up to date at migration %s\n\n", config["db"], latestMigration)
+		log.Printf("No migrations to perform at path %s\n\n", "./db/migrate")
 	}
 
 }
@@ -113,28 +116,29 @@ func openDatabase(config map[string]string) error {
 }
 
 // We should perhaps do this with the db driver instead
-func readMetadata() string {
-	latestMigration := ""
+func readMetadata() []string {
+	var migrations []string
 
-	sql := "select migration_version from fragmenta_metadata order by id desc limit 1;"
+	sql := "select migration_version from fragmenta_metadata order by id desc;"
 
 	rows, err := query.QuerySQL(sql)
 	if err != nil {
 		log.Printf("Database ERROR %s", err)
-		return ""
+		return migrations
 	}
 
 	// We expect just one row, with one column (count)
 	defer rows.Close()
 	for rows.Next() {
-		err := rows.Scan(&latestMigration)
+		var migration string
+		err := rows.Scan(&migration)
 		if err != nil {
 			log.Printf("Database ERROR %s", err)
-			return ""
+			return migrations
 		}
 	}
 
-	return latestMigration
+	return migrations
 }
 
 // Update the database with a line recording what we have done
@@ -147,4 +151,13 @@ func writeMetadata(config map[string]string, migrationVersion string) {
 		log.Printf("Database ERROR %s %s", err, result)
 	}
 
+}
+
+func contains(s string, a []string) bool {
+	for _, k := range a {
+		if s == k {
+			return true
+		}
+	}
+	return false
 }
