@@ -15,7 +15,7 @@ import (
 
 const (
 	// The version of this tool
-	fragmentaVersion = "1.2"
+	fragmentaVersion = "1.2.1"
 
 	// Used for outputting console messages
 	fragmentaDivider = "\n------\n"
@@ -164,17 +164,7 @@ func serverPath(projectPath string) string {
 }
 
 func serverCompilePath(projectPath string) string {
-	// When older app converted, change to:
-	// return path.Join(projectPath, "server.go")
-
-	_, err := os.Stat(path.Join(projectPath, "server.go"))
-	if err != nil {
-
-		// Check for old style app path (no server.go in root)
-		return projectPath + "/src/app"
-	}
-
-	return projectPath
+	return path.Join(projectPath, "server.go")
 }
 
 // Return the src to scan assets for compilation
@@ -254,12 +244,13 @@ func requireValidProject(projectPath string) bool {
 // isValidProject returns true if this is a valid fragmenta project (checks for server.go file and config file)
 func isValidProject(projectPath string) bool {
 
-	// Make sure we have server.go
+	// Make sure we have server.go at root of this dir
 	_, err := os.Stat(serverCompilePath(projectPath))
 	if err != nil {
 		return false
 	}
 
+	// Make sure we have a config file under secrets
 	_, err = os.Stat(configPath(projectPath))
 	if err != nil {
 		return false
