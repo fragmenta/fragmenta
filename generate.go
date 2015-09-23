@@ -176,7 +176,7 @@ func generateJoinSQL(args []string) string {
 	b := args[1]
 
 	sql := `
-DROP TABLE [[.join_table]];
+DROP TABLE IF EXISTS [[.join_table]];
 CREATE TABLE [[.join_table]] (
 [[.a]]_id int NOT NULL,
 [[.b]]_id int NOT NULL
@@ -197,12 +197,11 @@ CREATE TABLE [[.join_table]] (
 func generateResourceMigration(joinsSQL string) {
 
 	// We add the following fields to all resourceNames
-	sql := `DROP TABLE [[.fragmenta_resources]];
+	sql := `DROP TABLE IF EXISTS [[.fragmenta_resources]];
 CREATE TABLE [[.fragmenta_resources]] (
 id SERIAL NOT NULL,
 created_at timestamp,
 updated_at timestamp,
-status int,
 `
 
 	for k, v := range columns {
