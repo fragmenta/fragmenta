@@ -1,4 +1,7 @@
-// Command line tool for fragmenta which can be used to build and run websites
+// A command line tool for fragmenta which can be used to build and run websites
+// this tool calls subcommands for most of the work, usually one command per file in this pkg
+// See docs at http://godoc.org/github.com/fragmenta/fragmenta
+
 package main
 
 import (

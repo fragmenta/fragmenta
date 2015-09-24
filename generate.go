@@ -1,4 +1,3 @@
-// Generate migrations and resource files for a fragmenta website
 package main
 
 import (
