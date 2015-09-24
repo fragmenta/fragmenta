@@ -136,10 +136,10 @@ func ShowHelp(args []string) {
 	helpString += "\n  fragmenta -> builds and runs a fragmenta app"
 	helpString += "\n  fragmenta server -> builds and runs a fragmenta app"
 	helpString += "\n  fragmenta test  -> run tests"
+	helpString += "\n  fragmenta migrate -> runs new sql migrations in db/migrate"
 	helpString += "\n  fragmenta backup [development|production|test] -> backup the database to db/backup"
 	helpString += "\n  fragmenta restore [development|production|test] -> backup the database from latest file in db/backup"
 	helpString += "\n  fragmenta deploy [development|production|test] -> build and deploy using bin/deploy"
-	helpString += "\n  fragmenta migrate -> runs new sql migrations in db/migrate"
 	helpString += "\n  fragmenta generate resource [name] [fieldname]:[fieldtype]* -> creates resource CRUD actions and views"
 	helpString += "\n  fragmenta generate migration [name] -> creates a new named sql migration in db/migrate"
 

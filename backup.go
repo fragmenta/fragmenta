@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+// FIXME - instead of args[2:] here, we should only pass relevant args to all subcommands
+//and clean up subcommands to use this function everywhere
 func fragmentaConfig(args []string) string {
 	if len(args) > 0 {
 		return args[0]
@@ -37,7 +39,9 @@ func RunRestore(args []string) {
 	// Remove fragmenta backup from args list
 	args = args[2:]
 
-	switch fragmentaConfig(args) {
+    mode := fragmentaConfig(args)
+    
+	switch mode {
 	case "production":
 		restoreDB(ConfigProduction)
 	case "test":
@@ -45,6 +49,21 @@ func RunRestore(args []string) {
 	default:
 		restoreDB(ConfigDevelopment)
 	}
+    
+    // Now that we have restored, run a post restore script if it exists
+   restore := "./bin/restore"
+	_, err := os.Stat(restore)
+	if err == nil {
+    	log.Printf("Running restore script from " + restore)
+    	result, err := runCommand(restore, mode)
+    	if err != nil {
+    		log.Printf("Error running restore script %s", err)
+    		return
+    	} else {
+    	    log.Printf("%s", result)
+    	}
+	}
+    
 
 }
 
@@ -52,6 +71,7 @@ func RunRestore(args []string) {
 func restoreDB(config map[string]string) {
 	// Just assume it is psql for now
 	db := config["db"]
+
 
 	if len(db) == 0 {
 		log.Printf("Error running restore - no config")
