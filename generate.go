@@ -453,27 +453,30 @@ func showcolumns() string {
 
 // Generate form fields for our columns
 func formFields() string {
-	// Start with status which we include by default but want to be editable
-	fields := fmt.Sprintf(`{{ select "Status" "status" .%s.Status .%s.StatusOptions }}
-`, resourceName, resourceName)
 
+	fields := ""
 	tmpl := `    {{ [[.method]] "[[.field_name]]" "[[.column_name]]" .[[.fragmenta_resource]].[[.field_name]] }}
 `
 	for _, k := range sortedKeys(columns) {
 
-		fieldContext := map[string]string{
-			"fragmenta_resources": ToPlural(resourceName),
-			"fragmenta_resource":  resourceName,
-			"Fragmenta_Resources": ToCamel(ToPlural(resourceName)),
-			"Fragmenta_Resource":  ToCamel(resourceName),
-			"method":              "field",
-			"column_name":         k,
-			"field_name":          ToCamel(k),
-			"resource_name":       ToCamel(k),
-			"field_type":          toInputType(columns[k]),
-		}
+		// We add status as a special case menu
+		if k == "status" {
+			fields += fmt.Sprintf(`{{ select "Status" "status" .%s.Status .%s.StatusOptions }}`, resourceName, resourceName)
+		} else {
+			fieldContext := map[string]string{
+				"fragmenta_resources": ToPlural(resourceName),
+				"fragmenta_resource":  resourceName,
+				"Fragmenta_Resources": ToCamel(ToPlural(resourceName)),
+				"Fragmenta_Resource":  ToCamel(resourceName),
+				"method":              "field",
+				"column_name":         k,
+				"field_name":          ToCamel(k),
+				"resource_name":       ToCamel(k),
+				"field_type":          toInputType(columns[k]),
+			}
 
-		fields += renderTemplate(tmpl, fieldContext)
+			fields += renderTemplate(tmpl, fieldContext)
+		}
 
 	}
 	return fields
