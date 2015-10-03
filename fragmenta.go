@@ -18,7 +18,7 @@ import (
 
 const (
 	// The version of this tool
-	fragmentaVersion = "1.3"
+	fragmentaVersion = "1.3.1"
 
 	// Used for outputting console messages
 	fragmentaDivider = "\n------\n"
@@ -56,6 +56,9 @@ func main() {
 		log.Printf("Error getting path %s", err)
 		return
 	}
+
+	// If this is a valid fragmenta project, try reading the config
+	// NB we still run even if config fails, as we want to at least try a build/run cycle to enable bootstrap
 	if isValidProject(projectPath) {
 		readConfig(projectPath)
 	}
@@ -184,6 +187,10 @@ func configPath(projectPath string) string {
 	return projectPath + "/secrets/fragmenta.json"
 }
 
+func secretsPath(projectPath string) string {
+	return projectPath + "/secrets"
+}
+
 func templatesPath() string {
 	return os.ExpandEnv("$GOPATH/src/github.com/fragmenta/fragmenta/templates")
 }
@@ -249,12 +256,6 @@ func isValidProject(projectPath string) bool {
 
 	// Make sure we have server.go at root of this dir
 	_, err := os.Stat(serverCompilePath(projectPath))
-	if err != nil {
-		return false
-	}
-
-	// Make sure we have a config file under secrets
-	_, err = os.Stat(configPath(projectPath))
 	if err != nil {
 		return false
 	}
