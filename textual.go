@@ -71,6 +71,7 @@ var translations = map[string]string{
 	"bureau":      "bureaux", // or bureaus
 	"cactus":      "cacti",   // or cactus or cactuses
 	"chassis":     "chassis",
+	"chateau":     "chateaux", // or chateaus
 	"château":     "châteaux", // or châteaus
 	"child":       "children",
 	"codex":       "codices",
