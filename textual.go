@@ -83,7 +83,6 @@ var translations = map[string]string{
 	"datum":       "data",
 	"day":         "days",
 	"deer":        "deer", // or deers
-	"die":         "dice",
 	"diagnosis":   "diagnoses",
 	"die":         "dice",    // or dies
 	"dwarf":       "dwarves", // or dwarfs
