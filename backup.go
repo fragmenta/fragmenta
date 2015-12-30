@@ -39,8 +39,8 @@ func RunRestore(args []string) {
 	// Remove fragmenta backup from args list
 	args = args[2:]
 
-    mode := fragmentaConfig(args)
-    
+	mode := fragmentaConfig(args)
+
 	switch mode {
 	case "production":
 		restoreDB(ConfigProduction)
@@ -49,21 +49,20 @@ func RunRestore(args []string) {
 	default:
 		restoreDB(ConfigDevelopment)
 	}
-    
-    // Now that we have restored, run a post restore script if it exists
-   restore := "./bin/restore"
+
+	// Now that we have restored, run a post restore script if it exists
+	restore := "./bin/restore"
 	_, err := os.Stat(restore)
 	if err == nil {
-    	log.Printf("Running restore script from " + restore)
-    	result, err := runCommand(restore, mode)
-    	if err != nil {
-    		log.Printf("Error running restore script %s", err)
-    		return
-    	} else {
-    	    log.Printf("%s", result)
-    	}
+		log.Printf("Running restore script from " + restore)
+		result, err := runCommand(restore, mode)
+		if err != nil {
+			log.Printf("Error running restore script %s", err)
+			return
+		} else {
+			log.Printf("%s", result)
+		}
 	}
-    
 
 }
 
@@ -71,7 +70,6 @@ func RunRestore(args []string) {
 func restoreDB(config map[string]string) {
 	// Just assume it is psql for now
 	db := config["db"]
-
 
 	if len(db) == 0 {
 		log.Printf("Error running restore - no config")

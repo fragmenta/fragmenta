@@ -18,7 +18,7 @@ func RunTests(args []string) {
 
 	log.Printf("Running tests at %s", testDir)
 
-	result, err := runCommand("go", "test", "-v", testDir)
+	result, err := runCommand("go", "test", testDir)
 	if err != nil {
 		log.Printf("Error running tests %s", err)
 	}
