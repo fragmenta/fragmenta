@@ -51,33 +51,122 @@ func ToPlural(text string) (plural string) {
 // As this is used for database models, it only needs a limited subset of all irregulars
 // NB you should not attempt to reverse and singularize, but just use the singular provided
 var translations = map[string]string{
-	"hero":        "heroes",
-	"supernova":   "supernovae",
-	"day":         "days",
-	"monkey":      "monkeys",
-	"money":       "monies",
-	"chassis":     "chassis",
-	"sheep":       "sheep",
+	"addendum":    "addenda", // or addendums
 	"aircraft":    "aircraft",
-	"fish":        "fish",
-	"nucleus":     "nuclei",
-	"mouse":       "mice",
-	"buffalo":     "buffalo",
-	"species":     "species",
-	"information": "information",
-	"wife":        "wives",
-	"shelf":       "shelves",
-	"index":       "indices",
-	"matrix":      "matrices",
-	"formula":     "formulae",
-	"millennium":  "millennia",
-	"ganglion":    "ganglia",
-	"octopus":     "octopodes",
-	"man":         "men",
-	"woman":       "women",
-	"person":      "people",
+	"alumna":      "alumnae",
+	"alumnus":     "alumni",
+	"analysis":    "analyses",
+	"antenna":     "antennae", // or antennas
+	"antithesis":  "antitheses",
+	"apex":        "apices",     // or apexes
+	"appendix":    "appendices", // or appendixes
 	"axis":        "axes",
-	"die":         "dice",
+	"bacillus":    "bacilli",
+	"bacterium":   "bacteria",
+	"basis":       "bases",
+	"beau":        "beaux",   // or beaus
+	"belief":      "beliefs", // not irregular?
+	"bison":       "bison",
+	"buffalo":     "buffalo",
+	"bureau":      "bureaux", // or bureaus
+	"cactus":      "cacti",   // or cactus or cactuses
+	"chassis":     "chassis",
+	"chateau":     "chateaux", // or chateaus
+	"château":     "châteaux", // or châteaus
+	"child":       "children",
+	"codex":       "codices",
+	"concerto":    "concerti", // or concertos
+	"corpus":      "corpora",
+	"crisis":      "crises",
+	"criterion":   "criteria",  // or criterions
+	"curriculum":  "curricula", // or curriculums
+	"datum":       "data",
+	"day":         "days",
+	"deer":        "deer", // or deers
+	"diagnosis":   "diagnoses",
+	"die":         "dice",    // or dies
+	"dwarf":       "dwarves", // or dwarfs
+	"ellipsis":    "ellipses",
+	"erratum":     "errata",
+	"faux pas":    "faux pas",
+	"fez":         "fezzes",   // or fezes
+	"fish":        "fish",     // or fishes
+	"focus":       "foci",     // or focuses
+	"foot":        "feet",     // or foot
+	"formula":     "formulae", // or formulas
+	"fungus":      "fungi",    // or funguses
+	"ganglion":    "ganglia",
+	"genus":       "genera", // or genuses
+	"goose":       "geese",
+	"graffito":    "graffiti",
+	"grouse":      "grouse", // or grouses
+	"half":        "halves",
+	"hero":        "heroes",
+	"hoof":        "hooves", // or hoofs
+	"hypothesis":  "hypotheses",
+	"index":       "indices", // or indexes
+	"information": "information",
+	"larva":       "larvae",   // or larvas
+	"libretto":    "libretti", // or librettos
+	"life":        "lives",
+	"loaf":        "loaves",
+	"locus":       "loci",
+	"louse":       "lice",
+	"man":         "men",
+	"matrix":      "matrices",  // or matrixes
+	"medium":      "media",     // or mediums
+	"memorandum":  "memoranda", // or memorandums
+	"millennium":  "millennia",
+	"minutia":     "minutiae",
+	"moose":       "moose",
+	"money":       "monies", // not irregular?
+	"monkey":      "monkeys",
+	"mouse":       "mice",
+	"nebula":      "nebulae", // or nebulas
+	"nucleus":     "nuclei",  // or nucleuses
+	"oasis":       "oases",
+	"offspring":   "offspring", // or offsprings
+	"opus":        "opera",     // or opuses
+	"octopus":     "octopodes",
+	"ovum":        "ova",
+	"ox":          "oxen", // or ox
+	"parenthesis": "parentheses",
+	"person":      "people",
+	"phenomenon":  "phenomena", // or phenomenons
+	"phylum":      "phyla",
+	"prognosis":   "prognoses",
+	"quiz":        "quizzes",
+	"radius":      "radii",     // or radiuses
+	"referendum":  "referenda", // or referendums
+	"salmon":      "salmon",    // or salmons
+	"scarf":       "scarves",   // or scarfs
+	"self":        "selves",
+	"series":      "series",
+	"sheep":       "sheep",
+	"shrimp":      "shrimp", // or shrimps
+	"shelf":       "shelves",
+	"species":     "species",
+	"stimulus":    "stimuli",
+	"stratum":     "strata",
+	"swine":       "swine",
+	"syllabus":    "syllabi",  // or syllabuses
+	"symposium":   "symposia", // or symposiums
+	"synopsis":    "synopses",
+	"supernova":   "supernovae",
+	"tableau":     "tableaux", // or tableaus
+	"thesis":      "theses",
+	"thief":       "thieves",
+	"tooth":       "teeth",
+	"trout":       "trout",     // or trouts
+	"tuna":        "tuna",      // or tunas
+	"vertebra":    "vertebrae", // or vertebras
+	"vertex":      "verticies", // or vertexes
+	"vita":        "vitae",
+	"vortex":      "vorticies", // or vortexes
+	"wharf":       "wharves",   // or wharfs
+	"wife":        "wives",
+	"wolf":        "wolves",
+	"woman":       "women",
 	// ..etc
 }
 

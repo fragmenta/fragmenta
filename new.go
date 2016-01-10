@@ -35,7 +35,7 @@ func RunNew(args []string) {
 	repo := args[0]
 	projectPath, err := filepath.Abs(args[1])
 	if err != nil {
-		log.Printf("Erorr expanding file path\n")
+		log.Printf("Error expanding file path\n")
 		return
 	}
 
