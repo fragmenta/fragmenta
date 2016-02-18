@@ -39,6 +39,11 @@ func RunNew(args []string) {
 		return
 	}
 
+	if !strings.HasPrefix(projectPath, path.Join(os.Getenv("GOPATH"), "src")) {
+		log.Printf("Create project in $GOPATH/src \n")
+		return
+	}
+
 	if fileExists(projectPath) {
 		log.Printf("A folder already exists at path %s\n", projectPath)
 		return
