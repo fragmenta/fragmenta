@@ -40,7 +40,7 @@ func RunNew(args []string) {
 	}
 
 	if !strings.HasPrefix(projectPath, path.Join(os.Getenv("GOPATH"), "src")) {
-		log.Printf("Create project in $GOPATH/src \n")
+		log.Printf("You must create your project in $GOPATH/src\n")
 		return
 	}
 
