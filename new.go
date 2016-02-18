@@ -60,13 +60,15 @@ func RunNew(args []string) {
 		// TODO clean repo if it contains https or .git...
 	}
 
+	// Log fetching our files
+	log.Printf("Fetching from url: %s\n", repo)
+
 	// Go get the project url, to make sure it is up to date, should use -u
-	result, err := runCommand("go", "get", repo)
+	_, err = runCommand("go", "get", repo)
 	if err != nil {
 		log.Printf("Error calling go get %s", err)
 		return
 	}
-	log.Printf("%s", string(result))
 
 	// Copy the pristine new site over
 	goProjectPath := path.Join(os.Getenv("GOPATH"), "src", repo)
@@ -97,16 +99,19 @@ func RunNew(args []string) {
 
 func copyNewSite(goProjectPath, projectPath string) error {
 
-	// Now copy that over to a new project at projectPath - it should be in GOPATH/src/repo
-	// Unfortunately there is no simple facility for this in golang stdlib, so we use unix command (sorry windows!)
-	// FIXME - do not rely on unix commands
-
-	result, err := runCommand("cp", "-r", goProjectPath, projectPath)
+	// Check that the folders up to the path exist, if not create them
+	err := os.MkdirAll(projectPath, permissions)
 	if err != nil {
-		log.Printf("Error copying site %s", err)
+		log.Printf("The project path could not be created: %s", err)
 		return err
 	}
-	log.Printf("%s", string(result))
+
+	// Now recursively copy over the files from the original repo to project path
+	log.Printf("Creating files at: %s", projectPath)
+	_, err = copyPath(goProjectPath+"/", projectPath)
+	if err != nil {
+		return err
+	}
 
 	// Delete the .git folder at that path
 	gitPath := path.Join(projectPath, ".git")
@@ -117,14 +122,24 @@ func copyNewSite(goProjectPath, projectPath string) error {
 	}
 
 	// Run git init to get a new git repo here
-	result, err = runCommand("git", "init", projectPath)
+	log.Printf("Initialising new git repo at:%s", projectPath)
+	_, err = runCommand("git", "init", projectPath)
 	if err != nil {
 		return err
 	}
-	log.Printf("Initialising new git repo at:%s", projectPath)
 
 	// Now reifyNewSite
+	log.Printf("Updating import paths to: %s", projectPathRelative(projectPath))
 	return reifyNewSite(goProjectPath, projectPath)
+}
+
+// Copy a path to another one - at present this is unix only
+// Unfortunately there is no simple facility for this in golang stdlib,
+// so we use unix command (sorry windows!)
+// FIXME - do not rely on unix commands and do this properly
+func copyPath(src, dst string) ([]byte, error) {
+	// Replace this with an os independent version using filepath.Walk
+	return runCommand("cp", "-r", src, dst)
 }
 
 // reifyNewSite changes import refs within go files to the correct format
@@ -134,7 +149,8 @@ func reifyNewSite(goProjectPath, projectPath string) error {
 		return err
 	}
 
-	// For each go file within project, make sure the refs are to the new site, not to the template site
+	// For each go file within project, make sure the refs are to the new site,
+	// not to the template site
 	relGoProjectPath := projectPathRelative(goProjectPath)
 	relProjectPath := projectPathRelative(projectPath)
 	for _, f := range files {
@@ -170,8 +186,8 @@ func showNewSiteHelp(projectPath string) {
 	helpString += "\n  cd " + projectPath
 	helpString += "\n  fragmenta migrate"
 	helpString += "\n  fragmenta"
-	helpString += fragmentaDivider
-	log.Print(helpString)
+	helpString += fragmentaDivider + "\n"
+	fmt.Print(helpString) // fmt to avoid time output
 }
 
 // generateCreateSQL generates an SQL migration file to create the database user and database referred to in config
@@ -211,7 +227,7 @@ func generateCreateSQL(projectPath string) error {
 		os.Remove(createTablesPath)
 
 	} else {
-		fmt.Printf("NO TABLES %s", createTablesPath)
+		log.Printf("Error: No Tables found at:%s", createTablesPath)
 	}
 
 	return nil
