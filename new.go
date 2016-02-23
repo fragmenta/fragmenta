@@ -100,7 +100,7 @@ func RunNew(args []string) {
 func copyNewSite(goProjectPath, projectPath string) error {
 
 	// Check that the folders up to the path exist, if not create them
-	err := os.MkdirAll(projectPath, permissions)
+	err := os.MkdirAll(path.Dir(projectPath), permissions)
 	if err != nil {
 		log.Printf("The project path could not be created: %s", err)
 		return err
@@ -108,7 +108,7 @@ func copyNewSite(goProjectPath, projectPath string) error {
 
 	// Now recursively copy over the files from the original repo to project path
 	log.Printf("Creating files at: %s", projectPath)
-	_, err = copyPath(goProjectPath+"/", projectPath)
+	_, err = copyPath(goProjectPath, projectPath)
 	if err != nil {
 		return err
 	}
