@@ -81,6 +81,8 @@ func main() {
 
 	case "test", "t":
 		if requireValidProject(projectPath) {
+			// Remove fragmenta test from args list
+			args = args[2:]
 			RunTests(args)
 		}
 
@@ -111,6 +113,7 @@ func main() {
 
 	case "deploy", "d":
 		if requireValidProject(projectPath) {
+			RunTests(nil)
 			RunDeploy(args)
 		}
 

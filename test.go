@@ -7,8 +7,6 @@ import (
 
 // RunTests runs all tests below the current path or the path specified
 func RunTests(args []string) {
-	// Remove fragmenta test from args list
-	args = args[2:]
 
 	testDir := "./..."
 
