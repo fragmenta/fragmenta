@@ -65,10 +65,16 @@ func buildServer(server string, env []string) error {
 	log.Printf("Building server at %s", server)
 	started := time.Now()
 
-	log.Printf("CMD %s %s %s %s %s", "go", "build", "-o", server, serverCompilePath("."))
+	args := []string{"build", "-o", server, serverCompilePath(".")}
 
-	// NB we set environment here because we may be cross=compiling
-	cmd := exec.Command("go", "build", "-o", server, serverCompilePath("."))
+	// If a local build with no environment settings, use go build -i
+	if len(env) == 0 {
+		args = []string{"build", "-i", "-o", server, serverCompilePath(".")}
+	}
+
+	// Call go build with -i to install artefacts for local builds, and -o to output to ./bin
+	// log.Printf("  %s", args)
+	cmd := exec.Command("go", args...)
 	cmd.Stderr = os.Stdout
 
 	if env != nil {
