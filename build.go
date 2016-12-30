@@ -23,7 +23,7 @@ func RunBuild(args []string) {
 // buildServer removes the old binary and rebuilds the server
 func buildServer(server string, env []string) error {
 
-	// Remove old binary
+	// Remove old binary for server
 	_, err := os.Stat(server)
 	if err == nil {
 		err = os.Remove(server)
@@ -32,37 +32,19 @@ func buildServer(server string, env []string) error {
 		}
 	}
 
-	// If we have a goimports, run that, if not run go fmt
-	_, err = os.Stat(os.ExpandEnv("$GOPATH/bin/goimports"))
-
-	if err == nil {
-		// Go imports behaviour differs from go fmt
-		srcPath := "./"
-		log.Printf("Running goimports at %s", srcPath)
-		result, err := runCommand("goimports", "-w", srcPath)
-		if err != nil {
-			log.Printf("Error running goimports %s", err)
-			return err
-		}
-		if len(result) > 0 {
-			log.Printf(string(result))
-		}
-
-	} else {
-		srcPath := "./..."
-		// Run go fmt on any packages with src
-		log.Printf("Running go fmt at %s", srcPath)
-		result, err := runCommand("go", "fmt", srcPath)
-		if err != nil {
-			log.Printf("Error running fmt %s", err)
-			return err
-		}
-		if len(result) > 0 {
-			log.Printf(string(result))
-		}
+	// Run go fmt on any packages below root
+	srcPath := "./..."
+	log.Printf("Running go fmt at %s", srcPath)
+	result, err := runCommand("go", "fmt", srcPath)
+	if err != nil {
+		log.Printf("Error running fmt %s", err)
+		return err
+	}
+	if len(result) > 0 {
+		log.Printf(string(result))
 	}
 
-	// Build new binary
+	// Build new binary for server
 	log.Printf("Building server at %s", server)
 	started := time.Now()
 
