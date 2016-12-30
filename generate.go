@@ -18,9 +18,11 @@ const (
 	permissions = 0744
 )
 
-// FIXME - perhaps remove these package variables and do this in a neater way
-var resourceName string
-var columns map[string]string
+// These variables are set from user input and then used in generation
+var (
+	resourceName string
+	columns      map[string]string
+)
 
 // RunGenerate runs the generate command
 // Expects:
@@ -57,16 +59,15 @@ func RunGenerate(args []string) {
 	}
 }
 
-// Generate the scaffold for a new REST resource
+// generateResource creates the scaffold for a new REST resource
+// args should use snake_case, which is converted to camel case as necessary.
 func generateResource(args []string) {
 
-	// Extract the keys from args
-	// args should be using snake case, which we will convert to camel case as necc.
+	// Read user input from args
 	resourceName = ""
-
 	columns = make(map[string]string, 0)
-	var joins []string
 
+	var joins []string
 	for _, v := range args {
 
 		if len(resourceName) == 0 {

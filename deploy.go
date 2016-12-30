@@ -4,7 +4,6 @@ import (
 	"log"
 	"os"
 
-	// We depend on assets in order to build - how to tell user doesn't want assets?
 	"github.com/fragmenta/assets"
 )
 

@@ -6,6 +6,7 @@ import (
 )
 
 // RunTests runs all tests below the current path or the path specified
+// this is a simplistic wrapper around the go test tool
 func RunTests(args []string) {
 
 	testDir := "./..."

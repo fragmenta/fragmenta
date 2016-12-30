@@ -10,8 +10,6 @@ import (
 	"strings"
 )
 
-// We provide no facility to rollback at the moment, because rollbacks have all sorts of subtle issues and are not often useful IME.
-
 // RunMigrate runs all pending migrations
 func RunMigrate(args []string) {
 
@@ -29,7 +27,7 @@ func RunMigrate(args []string) {
 
 }
 
-// Find the last run migration, and run all those after it in order
+// migrateDB finds the last run migration, and run all those after it in order
 // We use the fragmenta_metadata table to do this
 func migrateDB(config map[string]string) {
 	var migrations []string
@@ -93,7 +91,7 @@ func migrateDB(config map[string]string) {
 
 }
 
-// Open our database
+// openDatabase opens the database specified in the config map
 func openDatabase(config map[string]string) error {
 	// Open the database
 	options := map[string]string{
@@ -114,7 +112,7 @@ func openDatabase(config map[string]string) error {
 	return nil
 }
 
-// We should perhaps do this with the db driver instead
+// readMetadata reads the metadata from the fragmenta_metadata table
 func readMetadata() []string {
 	var migrations []string
 
@@ -142,7 +140,7 @@ func readMetadata() []string {
 	return migrations
 }
 
-// Update the database with row(s) recording what we have done
+// writeMetadata writes a new row in the fragmenta_metadata table to record our action
 func writeMetadata(config map[string]string, migrations []string) {
 
 	for _, m := range migrations {
@@ -155,6 +153,7 @@ func writeMetadata(config map[string]string, migrations []string) {
 
 }
 
+// contains checks whether an array of strings contains a string
 func contains(s string, a []string) bool {
 	for _, k := range a {
 		if s == k {

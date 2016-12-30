@@ -5,23 +5,8 @@ import (
 	"strings"
 )
 
-// Truncate the given string to length using … as ellipsis.
-func Truncate(s string, length int) string {
-	return TruncateWithEllipsis(s, length, "…")
-}
-
-// TruncateWithEllipsis truncates the given string to length using provided ellipsis.
-func TruncateWithEllipsis(s string, length int, ellipsis string) string {
-
-	l := len(s)
-	el := len(ellipsis)
-	if l+el > length {
-		s = string(s[0:length-el]) + ellipsis
-	}
-	return s
-}
-
-// ToPlural provides the plural version of an English word using some simple rules and a table of exceptions.
+// ToPlural provides the plural version of an English word
+// using some simple rules and a table of exceptions.
 func ToPlural(text string) (plural string) {
 
 	// We only deal with lowercase
@@ -44,6 +29,38 @@ func ToPlural(text string) (plural string) {
 	}
 
 	return plural
+}
+
+// ToCamel converts a string from database column names
+// to corresponding struct field names
+// e.g. field_name to FieldName.
+func ToCamel(s string) string {
+
+	b := bytes.NewBufferString("")
+	words := strings.Split(s, "_")
+	for i, word := range words {
+
+		// If the word matches commonInitialisms like ID or HTML write as uppercase
+		if commonInitialisms[word] {
+			b.WriteString(strings.ToUpper(word))
+			continue
+		}
+
+		// If this is the first word write as lowercase
+		if i == 0 {
+			b.WriteString(word)
+			continue
+		}
+
+		// Otherwise, write the word with an initial cap
+
+		// Write the initial cap
+		b.WriteString(strings.ToUpper(word[:1]))
+
+		// Write the rest of the word
+		b.WriteString(word[1:])
+	}
+	return b.String()
 }
 
 // Which irregulars are important or correct depends on your usage of English
@@ -170,35 +187,48 @@ var translations = map[string]string{
 	// ..etc
 }
 
-// ToSnake converts a string from struct field names to corresponding database column names (e.g. FieldName to field_name)
-func ToSnake(text string) string {
-	b := bytes.NewBufferString("")
-	for i, c := range text {
-		if i > 0 && c >= 'A' && c <= 'Z' {
-			b.WriteRune('_')
-		}
-		b.WriteRune(c)
-	}
-	return strings.ToLower(b.String())
-}
-
-// ToCamel converts a string from database column names to corresponding struct field names (e.g. field_name to FieldName)
-func ToCamel(text string, private ...bool) string {
-	lowerCamel := false
-	if private != nil {
-		lowerCamel = private[0]
-	}
-	b := bytes.NewBufferString("")
-	s := strings.Split(text, "_")
-	for i, v := range s {
-		if len(v) > 0 {
-			s := v[:1]
-			if i > 0 || lowerCamel == false {
-				s = strings.ToUpper(s)
-			}
-			b.WriteString(s)
-			b.WriteString(v[1:])
-		}
-	}
-	return b.String()
+// commonInitialisms is a set of common initialisms.
+// Only add entries that are highly unlikely to be non-initialisms.
+// For instance, "ID" is fine (Freudian code is rare), but "AND" is not.
+// this set of initialisms is taken from golang.org/tools/lint
+// to avoid generating field names which the linter will complain about.
+var commonInitialisms = map[string]bool{
+	"acl":   true,
+	"api":   true,
+	"ascii": true,
+	"cpu":   true,
+	"css":   true,
+	"dns":   true,
+	"eof":   true,
+	"guid":  true,
+	"html":  true,
+	"http":  true,
+	"https": true,
+	"id":    true,
+	"ip":    true,
+	"json":  true,
+	"lhs":   true,
+	"qps":   true,
+	"ram":   true,
+	"rhs":   true,
+	"rpc":   true,
+	"sla":   true,
+	"smtp":  true,
+	"sql":   true,
+	"ssh":   true,
+	"tcp":   true,
+	"tls":   true,
+	"ttl":   true,
+	"udp":   true,
+	"ui":    true,
+	"uid":   true,
+	"uuid":  true,
+	"uri":   true,
+	"url":   true,
+	"utf8":  true,
+	"vm":    true,
+	"xml":   true,
+	"xmpp":  true,
+	"xsrf":  true,
+	"xss":   true,
 }

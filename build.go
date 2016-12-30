@@ -20,6 +20,7 @@ func RunBuild(args []string) {
 
 }
 
+// buildServer removes the old binary and rebuilds the server
 func buildServer(server string, env []string) error {
 
 	// Remove old binary
@@ -87,9 +88,8 @@ func buildServer(server string, env []string) error {
 		return err
 	}
 
-	// We should also be rebuilding assets here
+	// Record the output of our build (success or failure)
 	if len(output) == 0 {
-
 		log.Printf("Build completed successfully in %s", time.Since(started).String())
 	} else {
 		log.Printf(string(output))

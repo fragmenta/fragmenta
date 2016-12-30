@@ -9,16 +9,6 @@ import (
 	"time"
 )
 
-// FIXME - instead of args[2:] here, we should only pass relevant args to all subcommands
-//and clean up subcommands to use this function everywhere
-func fragmentaConfig(args []string) string {
-	if len(args) > 0 {
-		return args[0]
-	}
-
-	return "development" // default to dev config
-}
-
 // RunBackup creates a backup of the chosen database
 func RunBackup(args []string) {
 	// Remove fragmenta backup from args list
@@ -39,9 +29,7 @@ func RunRestore(args []string) {
 	// Remove fragmenta backup from args list
 	args = args[2:]
 
-	mode := fragmentaConfig(args)
-
-	switch mode {
+	switch fragmentaConfig(args) {
 	case "production":
 		restoreDB(ConfigProduction)
 	case "test":
@@ -55,18 +43,18 @@ func RunRestore(args []string) {
 	_, err := os.Stat(restore)
 	if err == nil {
 		log.Printf("Running restore script from " + restore)
+		mode := fragmentaConfig(args)
 		result, err := runCommand(restore, mode)
 		if err != nil {
 			log.Printf("Error running restore script %s", err)
 			return
-		} else {
-			log.Printf("%s", result)
 		}
+		log.Printf("%s", result)
 	}
 
 }
 
-// Restore back to our db from latestbackup
+// restoreDB restores using pg_dump from the latest backup
 func restoreDB(config map[string]string) {
 	// Just assume it is psql for now
 	db := config["db"]
@@ -114,6 +102,9 @@ func restoreDB(config map[string]string) {
 	log.Printf("Restore complete to db %s with %s", db, sql)
 }
 
+// backupDB backs up the db using the pg_dump binary
+// FIXME - look into alternatives using sql or adapters
+// we could have a backup/restore function on adapters?
 func backupDB(config map[string]string) {
 
 	// Just assume it is psql for now
@@ -147,4 +138,13 @@ func backupDB(config map[string]string) {
 	log.Printf(string(result))
 
 	log.Printf("Backup complete of db %s", db)
+}
+
+// fragmentaConfig returns the config set by args (development by default)
+func fragmentaConfig(args []string) string {
+	if len(args) > 0 {
+		return args[0]
+	}
+
+	return "development" // default to dev config
 }

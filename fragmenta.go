@@ -18,7 +18,7 @@ import (
 
 const (
 	// The version of this tool
-	fragmentaVersion = "1.3.3"
+	fragmentaVersion = "1.4"
 
 	// Used for outputting console messages
 	fragmentaDivider = "\n------\n"
