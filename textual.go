@@ -38,21 +38,13 @@ func ToCamel(s string) string {
 
 	b := bytes.NewBufferString("")
 	words := strings.Split(s, "_")
-	for i, word := range words {
+	for _, word := range words {
 
 		// If the word matches commonInitialisms like ID or HTML write as uppercase
 		if commonInitialisms[word] {
 			b.WriteString(strings.ToUpper(word))
 			continue
 		}
-
-		// If this is the first word write as lowercase
-		if i == 0 {
-			b.WriteString(word)
-			continue
-		}
-
-		// Otherwise, write the word with an initial cap
 
 		// Write the initial cap
 		b.WriteString(strings.ToUpper(word[:1]))

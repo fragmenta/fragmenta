@@ -4,14 +4,16 @@ import (
 	"testing"
 )
 
-// camelTests maps db style field_names to camelCase fieldNames
+// camelTests maps db style field_names to CamelCase FieldNames
+// as always create fields as public on models when generating
 var camelTests = map[string]string{
-	"snake_case":  "snakeCase",
-	"te":          "te",
+	"snake_case":  "SnakeCase",
+	"te":          "Te",
 	"id":          "ID",
-	"manager_id":  "managerID",
+	"tag":         "Tag",
+	"manager_id":  "ManagerID",
 	"id_prefix":   "IDPrefix",
-	"suffix_html": "suffixHTML",
+	"suffix_html": "SuffixHTML",
 }
 
 // TestToCamel tests the ToCamel function
