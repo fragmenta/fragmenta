@@ -283,7 +283,7 @@ func readConfig(projectPath string) error {
 	// Read the config json file
 	file, err := ioutil.ReadFile(configPath)
 	if err != nil {
-		log.Printf("Error opening config %s %v", configPath, err)
+		log.Printf("Error opening config at %s\n%s", configPath, err)
 		return err
 	}
 

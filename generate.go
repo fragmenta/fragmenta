@@ -101,17 +101,20 @@ func generateResource(args []string) {
 		for _, j := range joins {
 			joinSQL += generateJoinSQL([]string{resourceName, j})
 		}
-
 	}
 
-	// First db migration
+	// Copy our files first, if we fail, return the error
+	err := generateResourceFiles()
+	if err != nil {
+		log.Printf("Error generating resource: %s", err)
+		return
+	}
+
+	// Then db migration
 	generateResourceMigration(joinSQL)
 
 	// Then generate routes
 	generateResourceRoutes()
-
-	// Then finally copy files from templates dir over to src/resourceName
-	generateResourceFiles()
 
 }
 
@@ -160,7 +163,6 @@ func generateResourceRoutes() {
 	}
 
 	fmt.Println("Generated resource routes")
-
 }
 
 // Generate SQL for a join table migration
@@ -243,43 +245,53 @@ func appGeneratePath() string {
 	return codePath
 }
 
+// fullAppPath returns an absolute path to the app.
 func fullAppPath() string {
 	// Golang expects all source under GOPATH/src
-	return path.Join(os.ExpandEnv("$GOPATH"), "src", appPath())
+	return filepath.Join(os.ExpandEnv("$GOPATH"), "src", appPath())
 }
 
+// appPath returns a relative path for the app from GOPATH/src.
 func appPath() string {
-	return ConfigDevelopment["path"]
+	p := ConfigDevelopment["path"]
+	if p == "" {
+		// If no path set in secrets file
+		// default to pwd as a relative path from GOPATH/src
+		pwd, err := filepath.Abs(".")
+		if err != nil {
+			return p
+		}
+		base := filepath.Join(os.ExpandEnv("$GOPATH"), "src")
+		p = strings.Replace(pwd, base, "", 1)
+	}
+	return p
 }
 
 func appServerName() string {
-	return path.Base(ConfigDevelopment["path"])
+	return path.Base(appPath())
 }
 
 func appTemplatesPath() string {
 	return path.Join(fullAppPath(), "src", "lib", "templates", "fragmenta_resources")
 }
 
-func generateResourceFiles() {
+func generateResourceFiles() error {
 
 	srcPath := appTemplatesPath()
 
-	// Try to use local templates, if not use the fragmenta default templates
+	// Log an error and return if we can't find src path for templates
 	_, err := os.Stat(srcPath)
 	if err != nil {
-		// Use our internal templates path instead (inside the fragmenta package)
-		log.Printf("No template files at %s", srcPath)
-		//	srcPath = path.Join(templatesPath(), "fragmenta_resources")
+		return fmt.Errorf("no template files at :%s", srcPath)
 	}
-
-	log.Printf("Using templates at %s", srcPath)
 
 	// For a destination, use the set path or default to ./src/xxx
 	dstPath := path.Join(fullAppPath(), appGeneratePath(), ToPlural(resourceName))
 
-	fmt.Printf("Creating files at %s\n", dstPath)
-	copyAndReifyFiles(srcPath, dstPath)
+	// Log our usage of templates
+	log.Printf("Using templates at %s, saving to:%s\n", srcPath, dstPath)
 
+	return copyAndReifyFiles(srcPath, dstPath)
 }
 
 func copyAndReifyFiles(srcPath string, dstPath string) error {
