@@ -245,23 +245,38 @@ func appGeneratePath() string {
 	return codePath
 }
 
+// goPath returns the setting of env variable $GOPATH
+// or $HOME/go if no $GOPATH is set.
+func goPath() string {
+	p := os.ExpandEnv("$GOPATH")
+	if len(p) > 0 {
+		return p
+	}
+
+	return filepath.Join(os.ExpandEnv("$HOME"), "go")
+}
+
 // fullAppPath returns an absolute path to the app.
 func fullAppPath() string {
 	// Golang expects all source under GOPATH/src
-	return filepath.Join(os.ExpandEnv("$GOPATH"), "src", appPath())
+	return filepath.Join(goPath(), "src", appPath())
 }
 
-// appPath returns a relative path for the app from GOPATH/src.
+// appPath returns a relative path for the app from GOPATH/src
+// If no path is set in secrets file, we default to
+// a relative path starting from $GOPATH/src.
 func appPath() string {
 	p := ConfigDevelopment["path"]
 	if p == "" {
 		// If no path set in secrets file
-		// default to pwd as a relative path from GOPATH/src
+		// default to a relative path starting from GOPATH/src
 		pwd, err := filepath.Abs(".")
 		if err != nil {
 			return p
 		}
-		base := filepath.Join(os.ExpandEnv("$GOPATH"), "src")
+		// Remove gopath prefix
+		base := filepath.Join(goPath(), "src")
+		base = base + string(filepath.Separator)
 		p = strings.Replace(pwd, base, "", 1)
 	}
 	return p

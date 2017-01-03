@@ -58,7 +58,8 @@ func main() {
 	}
 
 	// If this is a valid fragmenta project, try reading the config
-	// NB we still run even if config fails, as we want to at least try a build/run cycle to enable bootstrap
+	// NB we still run even if config fails,
+	// as we want to at least try a build/run cycle to enable bootstrap
 	if isValidProject(projectPath) {
 		readConfig(projectPath)
 	}
