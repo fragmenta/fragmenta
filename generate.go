@@ -149,11 +149,11 @@ func generateResourceRoutes() {
 		return
 	}
 
-	routesStart := "func setupRoutes(r *router.Router) {"
-	routes = strings.Replace(routes, routesStart, routesStart+"\n"+resourceRoutes, 1)
+	routesStart := "// Resource Routes\n"
+	routes = strings.Replace(routes, routesStart, routesStart+resourceRoutes+"\n", 1)
 
-	resourceImport := reifyString("\n\t\"[[.fragmenta_app_path]]/[[.fragmenta_resources]]/actions\"")
-	importStart := "import ("
+	resourceImport := reifyString("\t\"[[.fragmenta_app_path]]/[[.fragmenta_resources]]/actions\"\n")
+	importStart := "\"github.com/fragmenta/router\"\n\n"
 	routes = strings.Replace(routes, importStart, importStart+resourceImport, 1)
 
 	err = ioutil.WriteFile(routesPath, []byte(routes), permissions)
@@ -404,10 +404,9 @@ func renderTemplate(tmpl string, context map[string]string) string {
 	return rendered.String()
 }
 
-// Generate golang assignments for our struct fields (for the new method)
-// users.Id = validate.Int(cols["id"])
+// Generate golang assignments for our struct fields with validation.
 func newFields() string {
-	tmpl := "\t[[.fragmenta_resource]].[[.field_name]] = validate.[[.validate_type]](cols[\"[[.col_name]]\"])\n"
+	tmpl := "\t[[.fragmenta_resource]].[[.field_name]] = resource.Validate[[.validate_type]](cols[\"[[.col_name]]\"])\n"
 	fields := ""
 	for _, k := range sortedKeys(columns) {
 		fieldContext := map[string]string{
