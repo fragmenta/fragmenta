@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/fragmenta/query"
 	"log"
-	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -53,7 +52,7 @@ func migrateDB(config map[string]string) {
 	}
 
 	for _, file := range files {
-		filename := path.Base(file)
+		filename := filepath.Base(file)
 
 		if !contains(filename, migrations) {
 			log.Printf("Running migration %s", filename)

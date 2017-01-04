@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -283,11 +282,11 @@ func appPath() string {
 }
 
 func appServerName() string {
-	return path.Base(appPath())
+	return filepath.Base(appPath())
 }
 
 func appTemplatesPath() string {
-	return path.Join(fullAppPath(), "src", "lib", "templates", "fragmenta_resources")
+	return filepath.Join(fullAppPath(), "src", "lib", "templates", "fragmenta_resources")
 }
 
 func generateResourceFiles() error {
@@ -301,7 +300,7 @@ func generateResourceFiles() error {
 	}
 
 	// For a destination, use the set path or default to ./src/xxx
-	dstPath := path.Join(fullAppPath(), appGeneratePath(), ToPlural(resourceName))
+	dstPath := filepath.Join(fullAppPath(), appGeneratePath(), ToPlural(resourceName))
 
 	// Log our usage of templates
 	log.Printf("Using templates at %s, saving to:%s\n", srcPath, dstPath)
@@ -331,13 +330,13 @@ func copyAndReifyFiles(srcPath string, dstPath string) error {
 			// and use everything after that as the dst path
 			srcParts := strings.Split(fileSrc, "/fragmenta_resources/")
 			if len(srcParts) == 2 {
-				fileDst = path.Join(dstPath, srcParts[1])
+				fileDst = filepath.Join(dstPath, srcParts[1])
 			}
 
 			fileDst = reifyName(fileDst)
 
 			// Do not operate on dot files
-			if strings.HasPrefix(path.Base(fileSrc), ".") && path.Base(fileSrc) != ".keep" {
+			if strings.HasPrefix(filepath.Base(fileSrc), ".") && filepath.Base(fileSrc) != ".keep" {
 				return nil
 			}
 
@@ -371,7 +370,7 @@ func copyAndReifyFiles(srcPath string, dstPath string) error {
 	output := reifyString(string(template))
 
 	// Make sure enclosing dir exists
-	os.MkdirAll(path.Dir(dstPath), permissions)
+	os.MkdirAll(filepath.Dir(dstPath), permissions)
 
 	// Now write out again at same path
 	err = ioutil.WriteFile(dstPath, []byte(output), permissions)
@@ -521,7 +520,7 @@ func reifyName(name string) string {
 // Make this template string concrete by filling in values
 func reifyString(tmpl string) string {
 	context := map[string]string{
-		"fragmenta_app_path":    path.Join(appPath(), appGeneratePath()),
+		"fragmenta_app_path":    filepath.Join(appPath(), appGeneratePath()),
 		"fragmenta_resources":   ToPlural(resourceName),
 		"fragmenta_resource":    resourceName,
 		"Fragmenta_Resources":   ToCamel(ToPlural(resourceName)),
@@ -626,16 +625,6 @@ func sortedKeys(m map[string]string) []string {
 // Generate a migration file in db/migrate
 func generateMigration(name string, content string) {
 	path := migrationPath(".", name)
-
-	// At present we don't check for duplicates -
-	// as our migrations include drop table, there is an argument for allowing more recent
-	// ones to supercede those which came before - if not we'd have to match on name alone not migration path...
-	/*
-	   if _, err := os.Stat(path); err == nil {
-	       fmt.Println("Migration already exists: ", name)
-	       return
-	   }
-	*/
 
 	fmt.Println("Generating migration: ", name)
 

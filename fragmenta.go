@@ -12,7 +12,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 )
 
@@ -174,7 +173,7 @@ func serverPath(projectPath string) string {
 }
 
 func serverCompilePath(projectPath string) string {
-	return path.Join(projectPath, "server.go")
+	return filepath.Join(projectPath, "server.go")
 }
 
 // Return the src to scan assets for compilation

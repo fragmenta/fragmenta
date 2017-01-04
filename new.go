@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 )
@@ -39,7 +38,7 @@ func RunNew(args []string) {
 		return
 	}
 
-	if !strings.HasPrefix(projectPath, path.Join(os.Getenv("GOPATH"), "src")) {
+	if !strings.HasPrefix(projectPath, filepath.Join(os.Getenv("GOPATH"), "src")) {
 		log.Printf("You must create your project in $GOPATH/src\n")
 		return
 	}
@@ -71,7 +70,7 @@ func RunNew(args []string) {
 	}
 
 	// Copy the pristine new site over
-	goProjectPath := path.Join(os.Getenv("GOPATH"), "src", repo)
+	goProjectPath := filepath.Join(os.Getenv("GOPATH"), "src", repo)
 	err = copyNewSite(goProjectPath, projectPath)
 	if err != nil {
 		log.Printf("Error copying project %s", err)
@@ -100,7 +99,7 @@ func RunNew(args []string) {
 func copyNewSite(goProjectPath, projectPath string) error {
 
 	// Check that the folders up to the path exist, if not create them
-	err := os.MkdirAll(path.Dir(projectPath), permissions)
+	err := os.MkdirAll(filepath.Dir(projectPath), permissions)
 	if err != nil {
 		log.Printf("The project path could not be created: %s", err)
 		return err
@@ -114,7 +113,7 @@ func copyNewSite(goProjectPath, projectPath string) error {
 	}
 
 	// Delete the .git folder at that path
-	gitPath := path.Join(projectPath, ".git")
+	gitPath := filepath.Join(projectPath, ".git")
 	log.Printf("Removing all at:%s", gitPath)
 	err = os.RemoveAll(gitPath)
 	if err != nil {
@@ -194,7 +193,7 @@ func showNewSiteHelp(projectPath string) {
 func generateCreateSQL(projectPath string) error {
 
 	// Set up a Create-Database migration, which comes first
-	name := path.Base(projectPath)
+	name := filepath.Base(projectPath)
 	d := ConfigDevelopment["db"]
 	u := ConfigDevelopment["db_user"]
 	p := ConfigDevelopment["db_pass"]
@@ -208,7 +207,7 @@ func generateCreateSQL(projectPath string) error {
 	}
 
 	// If we have a Create-Tables file, copy it out to a new migration with today's date
-	createTablesPath := path.Join(projectPath, "db", "migrate", createTablesMigrationName+".sql.tmpl")
+	createTablesPath := filepath.Join(projectPath, "db", "migrate", createTablesMigrationName+".sql.tmpl")
 	if fileExists(createTablesPath) {
 		sql, err := ioutil.ReadFile(createTablesPath)
 		if err != nil {
@@ -240,7 +239,7 @@ func projectPathRelative(projectPath string) string {
 
 func generateConfig(projectPath string) error {
 	configPath := configPath(projectPath)
-	prefix := path.Base(projectPath)
+	prefix := filepath.Base(projectPath)
 	log.Printf("Generating new config at %s", configPath)
 
 	ConfigProduction = map[string]string{}
@@ -321,7 +320,7 @@ func collectFiles(dir string, extensions []string) ([]string, error) {
 		// Deal with files only
 		if !info.IsDir() {
 			// Check for go files
-			name := path.Base(file)
+			name := filepath.Base(file)
 			if !strings.HasPrefix(name, ".") && strings.HasSuffix(name, ".go") {
 				files = append(files, file)
 			}
