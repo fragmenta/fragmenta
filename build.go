@@ -21,18 +21,14 @@ func RunBuild(args []string) {
 }
 
 // buildServer removes the old binary and rebuilds the server
+// - this is simply a wrapper around go build, you can instead
+// run go build server.go directly if you prefer.
 func buildServer(server string, env []string) error {
 
-	// Remove old binary for server
-	_, err := os.Stat(server)
-	if err == nil {
-		err = os.Remove(server)
-		if err != nil {
-			log.Printf("Error removing server %s", err)
-		}
-	}
+	// If environment is empty, we are doing a local build
+	localBuild := (len(env) == 0)
 
-	// Run go fmt on any packages below root
+	// First run go fmt on any packages below root
 	srcPath := "./..."
 	log.Printf("Running go fmt at %s", srcPath)
 	result, err := runCommand("go", "fmt", srcPath)
@@ -44,19 +40,39 @@ func buildServer(server string, env []string) error {
 		log.Printf(string(result))
 	}
 
-	// Build new binary for server
-	log.Printf("Building server at %s", server)
-	started := time.Now()
-
-	args := []string{"build", "-o", server, serverCompilePath(".")}
-
-	// If a local build with no environment settings, use go build -i
-	if len(env) == 0 {
-		args = []string{"build", "-i", "-o", server, serverCompilePath(".")}
+	// Then remove old binary
+	_, err = os.Stat(server)
+	if err == nil {
+		err = os.Remove(server)
+		if err != nil {
+			log.Printf("Error removing server %s", err)
+		}
 	}
 
-	// Call go build with -i to install artefacts for local builds, and -o to output to ./bin
-	// log.Printf("  %s", args)
+	// Build a new binary
+	started := time.Now()
+	log.Printf("Building server at %s", server)
+
+	// Start with build command
+	args := []string{"build"}
+
+	// Add output location
+	args = append(args, `-o`)
+	args = append(args, server)
+
+	if localBuild {
+		// Use -i to use intermediate objects already built
+		args = append(args, `-i`)
+	} else {
+		// Add ldflags arg to strip debug info for production builds
+		// This makes the binary smaller
+		args = append(args, `-ldflags="-s"`)
+	}
+
+	// Finally add the path to server.go
+	args = append(args, serverCompilePath("."))
+
+	// Call the command
 	cmd := exec.Command("go", args...)
 	cmd.Stderr = os.Stdout
 
