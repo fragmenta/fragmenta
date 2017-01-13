@@ -276,9 +276,9 @@ func generateConfig(projectPath string) error {
 	ConfigProduction["secret_key"] = randomKey(32)
 
 	configs := map[string]map[string]string{
-		"production":  ConfigProduction,
-		"development": ConfigDevelopment,
-		"test":        ConfigTest,
+		ModeProduction:  ConfigProduction,
+		ModeDevelopment: ConfigDevelopment,
+		ModeTest:        ConfigTest,
 	}
 
 	configJSON, err := json.MarshalIndent(configs, "", "\t")

@@ -97,10 +97,12 @@ func buildServer(server string, env []string) error {
 
 }
 
+// buildLocalServer builds the server at a local path
 func buildLocalServer() {
 	buildServer(localServerPath("."), nil)
 }
 
+// buildDeployServer builds the server for deployment on linux.
 func buildDeployServer() {
 	env := append(os.Environ(), "GOOS=linux")
 	env = append(env, "GOARCH=amd64")

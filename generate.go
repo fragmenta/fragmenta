@@ -351,7 +351,7 @@ func copyAndReifyFiles(srcPath string, dstPath string) error {
 
 		})
 
-		return nil
+		return err
 	}
 
 	// If the file already exists, we should probably prompt the user as to whether they want to overwrite?

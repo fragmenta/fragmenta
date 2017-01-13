@@ -17,10 +17,17 @@ import (
 
 const (
 	// The version of this tool
-	fragmentaVersion = "1.5rc"
+	fragmentaVersion = "1.5"
 
 	// Used for outputting console messages
 	fragmentaDivider = "\n------\n"
+)
+
+// Modes used for setting the config used
+const (
+	ModeProduction  = "production"
+	ModeDevelopment = "development"
+	ModeTest        = "test"
 )
 
 var (
@@ -214,8 +221,8 @@ func RunServer(projectPath string) {
 
 	log.Println("Launching server...")
 	cmd := exec.Command(localServerPath(projectPath))
-	stdout, err := cmd.StdoutPipe()
-	stderr, err := cmd.StderrPipe()
+	stdout, _ := cmd.StdoutPipe()
+	stderr, _ := cmd.StderrPipe()
 	err = cmd.Start()
 	if err != nil {
 		log.Println(err)
@@ -275,6 +282,8 @@ func fileExists(p string) bool {
 
 	return true
 }
+
+// FIXME - use new config pkg to load this instead
 
 // readConfig reads our config file and set up the server accordingly
 func readConfig(projectPath string) error {

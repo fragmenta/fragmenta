@@ -15,9 +15,9 @@ func RunBackup(args []string) {
 	args = args[2:]
 
 	switch fragmentaConfig(args) {
-	case "production":
+	case ModeProduction:
 		backupDB(ConfigProduction)
-	case "test":
+	case ModeTest:
 		backupDB(ConfigTest)
 	default:
 		backupDB(ConfigDevelopment)
@@ -30,9 +30,9 @@ func RunRestore(args []string) {
 	args = args[2:]
 
 	switch fragmentaConfig(args) {
-	case "production":
+	case ModeProduction:
 		restoreDB(ConfigProduction)
-	case "test":
+	case ModeTest:
 		restoreDB(ConfigTest)
 	default:
 		restoreDB(ConfigDevelopment)
@@ -146,5 +146,5 @@ func fragmentaConfig(args []string) string {
 		return args[0]
 	}
 
-	return "development" // default to dev config
+	return ModeDevelopment // default to dev config
 }

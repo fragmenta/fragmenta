@@ -1,23 +1,25 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"path/filepath"
 )
 
 // RunTests runs all tests below the current path or the path specified
 // this is a simplistic wrapper around the go test tool
 func RunTests(args []string) {
 
-	testDir := "./..."
+	// Send two paths to go - root and src
+	// we do this to ignore the vendor dir
+	testDirs := filepath.Join(". .", "src", "...")
 
 	if len(args) > 0 {
-		testDir = fmt.Sprintf("./%s", args[0])
+		testDirs = args[0]
 	}
 
-	log.Printf("Running tests at %s", testDir)
+	log.Printf("Running tests at %s", testDirs)
 
-	result, err := runCommand("go", "test", testDir)
+	result, err := runCommand("go", "test", testDirs)
 	if err != nil {
 		log.Printf("Error running tests %s", err)
 	}

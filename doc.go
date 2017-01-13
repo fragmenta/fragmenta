@@ -11,7 +11,7 @@ The following subcommands are available when using the command line fragmenta to
     ------
       fragmenta version -> display version
       fragmenta help -> display help
-      fragmenta new [app|cms|blog|go gettable URL] path/to/app -> creates a new app from the repository at URL at the path supplied
+      fragmenta new [app|cms|URL of go gettable project] path/to/app -> creates a new app from the repository at URL at the path supplied
       fragmenta -> builds and runs a fragmenta app
       fragmenta server -> builds and runs a fragmenta app
       fragmenta test  -> run tests

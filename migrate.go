@@ -16,9 +16,9 @@ func RunMigrate(args []string) {
 	args = args[2:]
 
 	switch fragmentaConfig(args) {
-	case "production":
+	case ModeProduction:
 		migrateDB(ConfigProduction)
-	case "test":
+	case ModeTest:
 		migrateDB(ConfigTest)
 	default:
 		migrateDB(ConfigDevelopment)

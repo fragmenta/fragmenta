@@ -3,11 +3,13 @@ package main
 import (
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/fragmenta/assets"
 )
 
-// RunDeploy builds the assets, builds the server, and then runs the script at ./bin/deploy if it exists
+// RunDeploy builds the assets, builds the server,
+// and then runs the script at ./bin/deploy if it exists
 func RunDeploy(args []string) {
 
 	// Build our app assets and update secrets/assets.json
@@ -16,7 +18,7 @@ func RunDeploy(args []string) {
 	// Build deploy server
 	buildDeployServer()
 
-	deploy := "./bin/deploy"
+	deploy := filepath.Join("bin", "deploy")
 
 	_, err := os.Stat(deploy)
 	if err != nil {
@@ -25,7 +27,7 @@ func RunDeploy(args []string) {
 	}
 
 	// Default to development
-	mode := "development"
+	mode := ModeDevelopment
 	if len(args) == 3 {
 		mode = args[2]
 	}
