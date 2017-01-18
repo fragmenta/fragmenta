@@ -14,7 +14,11 @@ import (
 )
 
 const (
+	// The default permissions for files
 	permissions = 0744
+
+	// Our routes template file path
+	routesTemplatePath = "lib/templates/fragmenta/app/routes.go.tmpl"
 )
 
 // These variables are set from user input and then used in generation
@@ -120,17 +124,14 @@ func generateResource(args []string) {
 // Generate the routes required and insert them into the routes.go file
 func generateResourceRoutes() {
 
-	// TODO - this routesTemplate should be a file
-	routesTemplate := `
-    r.Add("/[[.fragmenta_resources]]", [[.fragmenta_resource]]actions.HandleIndex)
-    r.Add("/[[.fragmenta_resources]]/create", [[.fragmenta_resource]]actions.HandleCreateShow)
-    r.Add("/[[.fragmenta_resources]]/create", [[.fragmenta_resource]]actions.HandleCreate).Post()
-    r.Add("/[[.fragmenta_resources]]/{id:[0-9]+}/update", [[.fragmenta_resource]]actions.HandleUpdateShow)
-    r.Add("/[[.fragmenta_resources]]/{id:[0-9]+}/update", [[.fragmenta_resource]]actions.HandleUpdate).Post()
-    r.Add("/[[.fragmenta_resources]]/{id:[0-9]+}/destroy", [[.fragmenta_resource]]actions.HandleDestroy).Post()
-    r.Add("/[[.fragmenta_resources]]/{id:[0-9]+}", [[.fragmenta_resource]]actions.HandleShow)`
+	// Load the routes from a template file which we expect at routesTemplatePath
+	routesTemplate, err := ioutil.ReadFile(routesTemplatePath)
+	if err != nil {
+		log.Fatal("Error reading file ", routesTemplatePath)
+	}
 
-	resourceRoutes := reifyString(routesTemplate)
+	// Substitutions
+	resourceRoutes := reifyString(string(routesTemplate))
 
 	routesPath := appRoutesFilePath()
 	data, err := ioutil.ReadFile(routesPath)
