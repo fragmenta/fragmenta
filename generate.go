@@ -18,7 +18,10 @@ const (
 	permissions = 0744
 
 	// Our routes template file path
-	routesTemplatePath = "lib/templates/fragmenta/app/routes.go.tmpl"
+	routesTemplatePath = "src/lib/templates/fragmenta_app/routes.go.tmpl"
+
+	// Our default path for writing routes
+	routesFilePath = "src/app/routes.go"
 )
 
 // These variables are set from user input and then used in generation
@@ -153,7 +156,7 @@ func generateResourceRoutes() {
 	routes = strings.Replace(routes, routesStart, routesStart+resourceRoutes+"\n", 1)
 
 	resourceImport := reifyString("\t\"[[.fragmenta_app_path]]/[[.fragmenta_resources]]/actions\"\n")
-	importStart := "\"github.com/fragmenta/router\"\n\n"
+	importStart := "// Resource Actions\n"
 	routes = strings.Replace(routes, importStart, importStart+resourceImport, 1)
 
 	err = ioutil.WriteFile(routesPath, []byte(routes), permissions)
@@ -231,7 +234,7 @@ func appRoutesFilePath() string {
 	// otherwise we default to ./src/app/routes.go
 	routesPath := ConfigDevelopment["path_routes"]
 	if len(routesPath) == 0 {
-		routesPath = "src/app/routes.go"
+		routesPath = routesFilePath
 	}
 
 	return routesPath
