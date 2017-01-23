@@ -46,11 +46,17 @@ func ToCamel(s string) string {
 			continue
 		}
 
+		// Ignore zero length words
+		if len(word) == 0 {
+			continue
+		}
+
 		// Write the initial cap
 		b.WriteString(strings.ToUpper(word[:1]))
 
 		// Write the rest of the word
 		b.WriteString(word[1:])
+
 	}
 	return b.String()
 }
