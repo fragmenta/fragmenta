@@ -17,7 +17,7 @@ import (
 
 const (
 	// The version of this tool
-	fragmentaVersion = "1.5.3"
+	fragmentaVersion = "1.5.4"
 
 	// Used for outputting console messages
 	fragmentaDivider = "\n------\n"
@@ -120,7 +120,6 @@ func main() {
 
 	case "deploy", "d":
 		if requireValidProject(projectPath) {
-			RunTests(nil)
 			RunDeploy(args)
 		}
 
