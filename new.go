@@ -255,6 +255,7 @@ func generateConfig(projectPath string) error {
 		"path":            projectPathRelative(projectPath),
 		"hmac_key":        randomKey(32),
 		"secret_key":      randomKey(32),
+		"session_name":    prefix,
 	}
 
 	// Should we ask for db prefix when setting up?
