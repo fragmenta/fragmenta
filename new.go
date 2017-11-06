@@ -132,13 +132,66 @@ func copyNewSite(goProjectPath, projectPath string) error {
 	return reifyNewSite(goProjectPath, projectPath)
 }
 
+func cpFile(src, dst string) (error) {
+	in, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+	out, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		cerr := out.Close()
+		if err == nil {
+			err = cerr
+		}
+	}()
+	if _, err = io.Copy(out, in); err != nil {
+		return err
+	}
+	err = out.Sync()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Copy a path to another one - at present this is unix only
 // Unfortunately there is no simple facility for this in golang stdlib,
 // so we use unix command (sorry windows!)
 // FIXME - do not rely on unix commands and do this properly
 func copyPath(src, dst string) ([]byte, error) {
 	// Replace this with an os independent version using filepath.Walk
-	return runCommand("cp", "-r", src, dst)
+	//return runCommand("cp", "-r", src, dst)
+	err:=filepath.Walk(src, func (srcPath string, f os.FileInfo, err error) error {
+		if err!=nil{
+			return err
+		}
+
+		relPath,err:=filepath.Rel(src, srcPath)
+		if err!=nil{
+			return err
+		}
+
+		destPath:=filepath.Join(dst, relPath)
+
+		if f.IsDir(){
+			os.MkdirAll(destPath, os.ModePerm);
+		}else{
+			err=cpFile(srcPath, destPath)
+			if err!=nil{
+				return err;
+			}
+
+		}
+		return nil
+	})
+	if err!=nil{
+		return nil,err
+	}
+	return nil,nil
 }
 
 // reifyNewSite changes import refs within go files to the correct format
