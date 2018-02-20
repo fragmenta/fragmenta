@@ -63,10 +63,6 @@ func buildServer(server string, env []string) error {
 	if localBuild {
 		// Use -i to use intermediate objects already built
 		args = append(args, `-i`)
-	} else {
-		// Add ldflags arg to strip debug info for production builds
-		// This makes the binary smaller
-		args = append(args, `-ldflags="-s"`)
 	}
 
 	// Finally add the path to server.go
