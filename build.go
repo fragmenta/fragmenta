@@ -58,6 +58,9 @@ func buildServer(server string, env []string) error {
 
 	// Add output location
 	args = append(args, `-o`)
+	if isWindows() {
+		server = server + ".exe"
+	}
 	args = append(args, server)
 
 	if localBuild {
