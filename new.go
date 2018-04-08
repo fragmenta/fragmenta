@@ -132,7 +132,7 @@ func copyNewSite(goProjectPath, projectPath string) error {
 	return reifyNewSite(goProjectPath, projectPath)
 }
 
-func cpFile(src, dst string) (error) {
+func cpFile(src, dst string) error {
 	in, err := os.Open(src)
 	if err != nil {
 		return err
@@ -165,33 +165,33 @@ func cpFile(src, dst string) (error) {
 func copyPath(src, dst string) ([]byte, error) {
 	// Replace this with an os independent version using filepath.Walk
 	//return runCommand("cp", "-r", src, dst)
-	err:=filepath.Walk(src, func (srcPath string, f os.FileInfo, err error) error {
-		if err!=nil{
+	err := filepath.Walk(src, func(srcPath string, f os.FileInfo, err error) error {
+		if err != nil {
 			return err
 		}
 
-		relPath,err:=filepath.Rel(src, srcPath)
-		if err!=nil{
+		relPath, err := filepath.Rel(src, srcPath)
+		if err != nil {
 			return err
 		}
 
-		destPath:=filepath.Join(dst, relPath)
+		destPath := filepath.Join(dst, relPath)
 
-		if f.IsDir(){
-			os.MkdirAll(destPath, os.ModePerm);
-		}else{
-			err=cpFile(srcPath, destPath)
-			if err!=nil{
-				return err;
+		if f.IsDir() {
+			os.MkdirAll(destPath, os.ModePerm)
+		} else {
+			err = cpFile(srcPath, destPath)
+			if err != nil {
+				return err
 			}
 
 		}
 		return nil
 	})
-	if err!=nil{
-		return nil,err
+	if err != nil {
+		return nil, err
 	}
-	return nil,nil
+	return nil, nil
 }
 
 // reifyNewSite changes import refs within go files to the correct format
