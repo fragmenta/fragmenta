@@ -54,3 +54,18 @@ The following independent packages are available for use with fragmenta apps (or
 * server - a simple server based on http.listenandserve
 * view - a library for rendering view templates using html/template
 * * helpers - helpers for form fields, currencies etc
+
+### Database setup 
+
+At present fragmenta assumes usage of Postresql, while it can be used with other databases, this is the default. 
+
+If you're setting up postgresql for the first time, you my find it simplest to simply create a user for yourself either as a superuser or with the specific privileges for local development as follows:
+
+```sql
+sudo su postgres
+createuser $USER
+psql
+ALTER USER $USER WITH SUPERUSER;
+ALTER USER $USER WITH CREATEROLE;
+ALTER USER $USER WITH CREATEDB;
+```
