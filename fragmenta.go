@@ -169,12 +169,21 @@ func ShowHelp(args []string) {
 
 // serverName returns the name of our server file - TODO:read from config
 func serverName() string {
-	return "fragmenta-server" // for now, should use configs
+	name := "fragmenta-server"
+	if isWindows() {
+		name = name + ".exe"
+	}
+	return name // for now, should use configs
 }
 
 func localServerPath(projectPath string) string {
-	var servername = fmt.Sprintf("%s-local", serverName())
-	return filepath.Join(projectPath, "bin", servername)
+	name := serverName()
+	if isWindows() {
+		name = strings.Join(strings.Split(name, ".")[:1], "") + "-local.exe"
+	} else {
+		name = fmt.Sprintf("%s-local", name)
+	}
+	return filepath.Join(projectPath, "bin", name)
 }
 
 func serverPath(projectPath string) string {
