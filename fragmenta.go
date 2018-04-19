@@ -239,9 +239,10 @@ func projectPathRelative(projectPath string) string {
 // goPath returns the setting of env variable $GOPATH
 // or $HOME/go if no $GOPATH is set.
 func goPath() string {
-	p := os.ExpandEnv("$GOPATH")
-	if len(p) > 0 {
-		return p
+	// Get the first entry in gopath
+	paths := filepath.SplitList(os.ExpandEnv("$GOPATH"))
+	if len(paths) > 0 && paths[0] != "" {
+		return paths[0]
 	}
 	return filepath.Join(homePath(), "go")
 }
