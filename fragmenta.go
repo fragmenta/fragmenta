@@ -248,8 +248,6 @@ func goPath() string {
 func RunServer(projectPath string) {
 	ShowVersion()
 
-	killServer()
-
 	log.Println("Building server...")
 	err := buildServer(localServerPath(projectPath), nil)
 
@@ -270,11 +268,6 @@ func RunServer(projectPath string) {
 	go io.Copy(os.Stderr, stderr)
 	cmd.Wait()
 
-}
-
-// killServer kills the server with a unix command - FIXME:Windows
-func killServer() {
-	runCommand("killall", "-9", serverName())
 }
 
 // runCommand runs a command with exec.Command
