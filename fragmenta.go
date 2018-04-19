@@ -122,13 +122,14 @@ func main() {
 		if requireValidProject(projectPath) {
 			RunDeploy(args)
 		}
-
-	default:
+	case "":
+		// special case no command to run server
 		if requireValidProject(projectPath) {
 			RunServer(projectPath)
-		} else {
-			ShowHelp(args)
 		}
+	default:
+		// Command not recognised so show the help
+		ShowHelp(args)
 	}
 
 }
