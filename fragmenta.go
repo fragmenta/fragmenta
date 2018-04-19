@@ -19,7 +19,7 @@ import (
 
 const (
 	// The version of this tool
-	fragmentaVersion = "1.5.6"
+	fragmentaVersion = "1.5.7"
 
 	// Used for outputting console messages
 	fragmentaDivider = "\n------\n"
@@ -43,11 +43,13 @@ var (
 	ConfigTest map[string]string
 )
 
-// main - Parse the command line arguments and respond
+// main - parse the command line arguments and respond
 func main() {
 
+	// Log time as well as date
 	log.SetFlags(log.Ltime)
 
+	// Parse commands
 	args := os.Args
 	command := ""
 
@@ -55,19 +57,14 @@ func main() {
 		command = args[1]
 	}
 
-	// We should intelligently read project path depending on the command?
-	// Or just assume we act on the current directory?
-	// NB projectPath might be different from the path in config, which MUST be within a GOPATH
-	// this is the local project path
+	// We assume the project path is the current directory (for now)
 	projectPath, err := filepath.Abs(".")
 	if err != nil {
 		log.Printf("Error getting path %s", err)
 		return
 	}
 
-	// If this is a valid fragmenta project, try reading the config
-	// NB we still run even if config fails,
-	// as we want to at least try a build/run cycle to enable bootstrap
+	// If this is a valid project, read the config, else continue
 	if isValidProject(projectPath) {
 		readConfig(projectPath)
 	}
@@ -125,7 +122,7 @@ func main() {
 			RunDeploy(args)
 		}
 	case "":
-		// special case no command to run server
+		// Special case no commands to build and run the server
 		if requireValidProject(projectPath) {
 			RunServer(projectPath)
 		}
@@ -165,71 +162,86 @@ func ShowHelp(args []string) {
 	log.Print(helpString)
 }
 
-// FIXME - move all instances of hardcoded paths out into optional app config variables
-// Ideally we don't care about project structure apart from the load the fragmenta.json file
-
-// serverName returns the name of our server file - TODO:read from config
+// serverName returns the path of the cross-compiled target server binary
 func serverName() string {
 	name := "fragmenta-server"
 	if isWindows() {
 		name = name + ".exe"
 	}
-	return name // for now, should use configs
+	return name
 }
 
+// localServerName returns a server name for the local server binary (prefixed with local)
+func localServerName() string {
+	return "local-" + serverName()
+}
+
+// localServerPath returns the local server binary for running on the dev machine locally
 func localServerPath(projectPath string) string {
-	name := serverName()
-	if isWindows() {
-		name = strings.Join(strings.Split(name, ".")[:1], "") + "-local.exe"
-	} else {
-		name = fmt.Sprintf("%s-local", name)
-	}
-	return filepath.Join(projectPath, "bin", name)
+	return filepath.Join(projectPath, "bin", localServerName())
 }
 
+// serverPath returns the cross-compiled server binary
 func serverPath(projectPath string) string {
 	return filepath.Join(projectPath, "bin", serverName())
 }
 
+// serverCompilePath returns the server entrypoint
 func serverCompilePath(projectPath string) string {
 	return filepath.Join(projectPath, "server.go")
 }
 
-// Return the src to scan assets for compilation
-// Can this be set within the project setup instead to avoid hardcoding here?
+// srcPath returns the path for Go code within the project
 func srcPath(projectPath string) string {
 	return filepath.Join(projectPath, "src")
 }
 
+// publicPath returns the path for the public directory of the web application
 func publicPath(projectPath string) string {
 	return filepath.Join(projectPath, "public")
 }
 
+// configPath returns the path for the fragment config file (required)
 func configPath(projectPath string) string {
 	return filepath.Join(secretsPath(projectPath), "fragmenta.json")
 }
 
+// secretsPath returns the path for secrets
 func secretsPath(projectPath string) string {
 	return filepath.Join(projectPath, "secrets")
 }
 
+// templatesPath returns the path for templates
 func templatesPath() string {
-	path := filepath.Join("$GOPATH", "src", "github.com", "fragmenta", "fragmenta", "templates")
+	path := filepath.Join(goPath(), "src", "github.com", "fragmenta", "fragmenta", "templates")
 	return os.ExpandEnv(path)
 }
 
+// dbMigratePath returns a path to store database migrations
 func dbMigratePath(projectPath string) string {
 	return filepath.Join(projectPath, "db", "migrate")
 }
 
+// dbBackupPath returns a path to store database backups
 func dbBackupPath(projectPath string) string {
 	return filepath.Join(projectPath, "db", "backup")
 }
 
+// projectPathRelative returns the relative path
 func projectPathRelative(projectPath string) string {
-	goSrc := os.Getenv("GOPATH")
-	goSrc = filepath.Join(goSrc, "src")
+	goSrc := filepath.Join(goPath(), "src")
 	return strings.Replace(projectPath, goSrc, "", 1)
+}
+
+// goPath returns the setting of env variable $GOPATH
+// or $HOME/go if no $GOPATH is set.
+func goPath() string {
+	p := os.ExpandEnv("$GOPATH")
+	if len(p) > 0 {
+		return p
+	}
+
+	return filepath.Join(os.ExpandEnv("$HOME"), "go")
 }
 
 // RunServer runs the server
@@ -283,9 +295,8 @@ func requireValidProject(projectPath string) bool {
 		return true
 	}
 
-	log.Printf("\nNo fragmenta project found at this path\n")
+	log.Printf("No fragmenta project found at this path\n")
 	return false
-
 }
 
 // isValidProject returns true if this is a valid fragmenta project (checks for server.go file and config file)
@@ -309,8 +320,6 @@ func fileExists(p string) bool {
 
 	return true
 }
-
-// FIXME - use new config pkg to load this instead
 
 // readConfig reads our config file and set up the server accordingly
 func readConfig(projectPath string) error {
@@ -337,6 +346,7 @@ func readConfig(projectPath string) error {
 	return nil
 }
 
+// isWindows returns true if the Go architecture target (GOOS) is windows
 func isWindows() bool {
 	if runtime.GOOS == "windows" {
 		return true

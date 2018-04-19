@@ -248,17 +248,6 @@ func appGeneratePath() string {
 	return codePath
 }
 
-// goPath returns the setting of env variable $GOPATH
-// or $HOME/go if no $GOPATH is set.
-func goPath() string {
-	p := os.ExpandEnv("$GOPATH")
-	if len(p) > 0 {
-		return p
-	}
-
-	return filepath.Join(os.ExpandEnv("$HOME"), "go")
-}
-
 // fullAppPath returns an absolute path to the app.
 func fullAppPath() string {
 	// Golang expects all source under GOPATH/src
