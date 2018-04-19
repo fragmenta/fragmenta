@@ -233,11 +233,14 @@ func reifyNewSite(goProjectPath, projectPath string) error {
 func showNewSiteHelp(projectPath string) {
 	helpString := fragmentaDivider
 	helpString += "Congratulations, we've made a new website at " + projectPathRelative(projectPath)
-	helpString += "\n  if you wish you can edit the database config at secrets/fragmenta.json and sql at db/migrate"
+	helpString += "\n  if you wish you can edit the database config at:"
+	helpString += "\n    " + projectPathRelative(configPath(projectPath))
+	helpString += "\n  and sql at:"
+	helpString += "\n    " + projectPathRelative(dbMigratePath(projectPath))
 	helpString += "\n  To get started, run the following commands:"
-	helpString += "\n  cd " + projectPath
-	helpString += "\n  fragmenta migrate"
-	helpString += "\n  fragmenta"
+	helpString += "\n    cd " + projectPath
+	helpString += "\n    fragmenta migrate"
+	helpString += "\n    fragmenta"
 	helpString += fragmentaDivider + "\n"
 	fmt.Print(helpString) // fmt to avoid time output
 }
@@ -283,11 +286,6 @@ func generateCreateSQL(projectPath string) error {
 	}
 
 	return nil
-}
-
-func projectPathRelative(projectPath string) string {
-	goSrc := os.Getenv("GOPATH") + "/src/"
-	return strings.Replace(projectPath, goSrc, "", 1)
 }
 
 func generateConfig(projectPath string) error {

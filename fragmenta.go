@@ -13,6 +13,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
+	"strings"
 )
 
 const (
@@ -168,15 +170,25 @@ func ShowHelp(args []string) {
 
 // serverName returns the name of our server file - TODO:read from config
 func serverName() string {
-	return "fragmenta-server" // for now, should use configs
+	name := "fragmenta-server"
+	if isWindows() {
+		name = name + ".exe"
+	}
+	return name // for now, should use configs
 }
 
 func localServerPath(projectPath string) string {
-	return fmt.Sprintf("%s/bin/%s-local", projectPath, serverName())
+	name := serverName()
+	if isWindows() {
+		name = strings.Join(strings.Split(name, ".")[:1], "") + "-local.exe"
+	} else {
+		name = fmt.Sprintf("%s-local", name)
+	}
+	return filepath.Join(projectPath, "bin", name)
 }
 
 func serverPath(projectPath string) string {
-	return fmt.Sprintf("%s/bin/%s", projectPath, serverName())
+	return filepath.Join(projectPath, "bin", serverName())
 }
 
 func serverCompilePath(projectPath string) string {
@@ -186,23 +198,38 @@ func serverCompilePath(projectPath string) string {
 // Return the src to scan assets for compilation
 // Can this be set within the project setup instead to avoid hardcoding here?
 func srcPath(projectPath string) string {
-	return projectPath + "src"
+	return filepath.Join(projectPath, "src")
 }
 
 func publicPath(projectPath string) string {
-	return projectPath + "public"
+	return filepath.Join(projectPath, "public")
 }
 
 func configPath(projectPath string) string {
-	return projectPath + "/secrets/fragmenta.json"
+	return filepath.Join(secretsPath(projectPath), "fragmenta.json")
 }
 
 func secretsPath(projectPath string) string {
-	return projectPath + "/secrets"
+	return filepath.Join(projectPath, "secrets")
 }
 
 func templatesPath() string {
-	return os.ExpandEnv("$GOPATH/src/github.com/fragmenta/fragmenta/templates")
+	path := filepath.Join("$GOPATH", "src", "github.com", "fragmenta", "fragmenta", "templates")
+	return os.ExpandEnv(path)
+}
+
+func dbMigratePath(projectPath string) string {
+	return filepath.Join(projectPath, "db", "migrate")
+}
+
+func dbBackupPath(projectPath string) string {
+	return filepath.Join(projectPath, "db", "backup")
+}
+
+func projectPathRelative(projectPath string) string {
+	goSrc := os.Getenv("GOPATH")
+	goSrc = filepath.Join(goSrc, "src")
+	return strings.Replace(projectPath, goSrc, "", 1)
 }
 
 // RunServer runs the server
@@ -308,4 +335,11 @@ func readConfig(projectPath string) error {
 	ConfigTest = data["test"]
 
 	return nil
+}
+
+func isWindows() bool {
+	if runtime.GOOS == "windows" {
+		return true
+	}
+	return false
 }
