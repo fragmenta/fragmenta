@@ -148,7 +148,7 @@ func ShowHelp(args []string) {
 	helpString += fmt.Sprintf("Fragmenta version: %s", fragmentaVersion)
 	helpString += "\n  fragmenta version -> display version"
 	helpString += "\n  fragmenta help -> display help"
-	helpString += "\n  fragmenta new [app|cms|blog|URL] path/to/app -> creates a new app from the repository at URL at the path supplied"
+	helpString += "\n  fragmenta new [app|cms|URL] path/to/app -> creates a new app from the repository at URL at the path supplied"
 	helpString += "\n  fragmenta -> builds and runs a fragmenta app"
 	helpString += "\n  fragmenta server -> builds and runs a fragmenta app"
 	helpString += "\n  fragmenta test  -> run tests"

@@ -52,8 +52,9 @@ func RunNew(args []string) {
 		repo = "github.com/fragmenta/fragmenta-app"
 	case "cms":
 		repo = "github.com/fragmenta/fragmenta-cms"
-	case "blog":
-		repo = "github.com/fragmenta/fragmenta-blog"
+		// TODO: Blog example does not exist yet
+		//	case "blog":
+		//		repo = "github.com/fragmenta/fragmenta-blog"
 	default:
 		// TODO clean repo if it contains https or .git...
 	}
