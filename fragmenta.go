@@ -162,18 +162,21 @@ func ShowHelp(args []string) {
 	log.Print(helpString)
 }
 
+// Ideally all these paths could be configured,
+// rather than baking assumptions about project structure into the tool
+
 // serverName returns the path of the cross-compiled target server binary
+// this does not end in .exe as we assume a target of linux
 func serverName() string {
-	name := "fragmenta-server"
-	if isWindows() {
-		name = name + ".exe"
-	}
-	return name
+	return "fragmenta-server"
 }
 
 // localServerName returns a server name for the local server binary (prefixed with local)
 func localServerName() string {
-	return "local-" + serverName()
+	if isWindows() {
+		return serverName() + "-local.exe"
+	}
+	return serverName() + "-local"
 }
 
 // localServerPath returns the local server binary for running on the dev machine locally
