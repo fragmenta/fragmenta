@@ -243,8 +243,15 @@ func goPath() string {
 	if len(p) > 0 {
 		return p
 	}
+	return filepath.Join(homePath(), "go")
+}
 
-	return filepath.Join(os.ExpandEnv("$HOME"), "go")
+// homePath returns the user's home directory
+func homePath() string {
+	if isWindows() {
+		return os.ExpandEnv("$userprofile")
+	}
+	return os.ExpandEnv("$HOME")
 }
 
 // RunServer runs the server
