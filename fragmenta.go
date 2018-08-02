@@ -82,6 +82,7 @@ func main() {
 
 	case "server", "s":
 		if requireValidProject(projectPath) {
+			RunTests(nil)
 			RunServer(projectPath)
 		}
 
@@ -94,6 +95,7 @@ func main() {
 
 	case "build", "B":
 		if requireValidProject(projectPath) {
+			RunTests(nil)
 			RunBuild(args)
 		}
 
@@ -124,6 +126,7 @@ func main() {
 	case "":
 		// Special case no commands to build and run the server
 		if requireValidProject(projectPath) {
+			RunTests(nil)
 			RunServer(projectPath)
 		}
 	default:
