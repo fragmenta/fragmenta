@@ -82,7 +82,6 @@ func main() {
 
 	case "server", "s":
 		if requireValidProject(projectPath) {
-			RunTests(nil)
 			RunServer(projectPath)
 		}
 
