@@ -62,7 +62,8 @@ func buildServer(server string, env []string) error {
 
 	if localBuild {
 		// Use -i to use intermediate objects already built
-		args = append(args, `-i`)
+		// This is no longer recommended and causes permissions errors on Mac OS Catalina
+		//		args = append(args, `-i`)
 	}
 
 	// Finally add the path to server.go
