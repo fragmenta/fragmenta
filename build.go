@@ -26,7 +26,7 @@ func RunBuild(args []string) {
 func buildServer(server string, env []string) error {
 
 	// If environment is empty, we are doing a local build
-	localBuild := (len(env) == 0)
+	// localBuild := (len(env) == 0)
 
 	// First run go fmt on any packages below root
 	srcPath := "./..."
@@ -59,12 +59,6 @@ func buildServer(server string, env []string) error {
 	// Add output location
 	args = append(args, `-o`)
 	args = append(args, server)
-
-	if localBuild {
-		// Use -i to use intermediate objects already built
-		// This is no longer recommended and causes permissions errors on Mac OS Catalina
-		//		args = append(args, `-i`)
-	}
 
 	// Finally add the path to server.go
 	args = append(args, serverCompilePath("."))
